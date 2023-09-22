@@ -1,0 +1,10 @@
+<nav>
+    <ul>
+        <li><a href="{% url 'banking:index' %}">Home</a></li>
+        
+        {% if user %}
+            <li><a   href="{% url 'banking:employee' %}">Employee Dashboard</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% endif %}
+    </ul>
+</nav>
