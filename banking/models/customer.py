@@ -1,10 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
-from models.costumer_rank import Costumer_rank
+from models.customer_rank import Customer_rank
 
 class Customer(models.Model):
     user_id = models.ForeignKey(User)
-    costumer_rank_id = models.ForeignKey(Costumer_rank)
+    customer_rank_id = models.ForeignKey(Customer_rank)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.CharField(max_length=100)
