@@ -8,4 +8,6 @@ urlpatterns = [
     path('', index.index, name='index'),
     path('employee/', employee.index, name='employee'),
     path('employee/customer', employee.customer, name='employee/customer'),
+    path('employee/customer/<int:pk>', employee.customer_details, name='employee/customer_pk'),
+    path('employee/customer/<int:pk>/account', employee.customer_account, name='employee/customer/account'),
 ]

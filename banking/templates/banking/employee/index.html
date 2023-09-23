@@ -30,7 +30,7 @@
                     <td>{{ customer.user_id.last_name }}</td>
                     <td>{{ customer.user_id.email }}</td>
                     <td>{{ customer.customer_rank.name }}</td>
-                    <td><a href="">Accounts</td>
+                    <td><a href="{% url 'banking:employee/customer_pk' customer.pk %}">Accounts</td>
                 </tr>
             {% endfor %}
     </table>
