@@ -9,15 +9,15 @@
 </head>
 <body>
     {% include 'snippets/nav.html' %}
-
-    <h1>Banking</h1>
-
-    <p>
-       Welcome to the bank</a>
-    </p>
-
-
-
+    
+    <h1>Add new employee</h1>
+    
+    <form method="POST" actions="{% url 'banking:employee/customer' %}">
+        {% csrf_token %}
+        {{ customer_form }}
+        <br>
+        <button>Submit</button>
+    </form>
 
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {

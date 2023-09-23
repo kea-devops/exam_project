@@ -7,6 +7,8 @@
         <title>Login</title>
     </head>
     <body>
+        {% include 'snippets/nav.html' %}
+
         <header>
             <h1>Login</h1>
         </header>
@@ -16,7 +18,7 @@
                 <fieldset>
                     <legend>Please login</legend>
                     {% csrf_token %}
-                    <input type="text" name="username" placeholder="User name">
+                    <input type="text" name="username" placeholder="Email">
                     <input type="password" name="password" placeholder="Password">
                     <button>Submit</button>
                 </fieldset>
