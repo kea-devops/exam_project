@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'banking.middleware.BodyParsingMiddleware',
+    'banking.middleware.AuthorizationMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
