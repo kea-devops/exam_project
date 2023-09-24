@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/htmx.org@1.9.3" integrity="sha384-lVb3Rd/Ca0AxaoZg5sACe8FJKF0tnUgR2Kd7ehUOG5GCcROv5uBIZsOqovBAcWua" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holiday.css@0.9.8" />
+    <title>Banking System</title>
+</head>
+<body>
+    {% include 'snippets/nav.html' %}    
+
+    <h1>Customer Dashboard</h1>
+
+    <h2>Hello {{ customer.first_name }} {{ customer.last_name }}</h2>
+
+    <h2>Accounts <a href="{% url 'banking:customer/account' %}">+</a></h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Balance</th>
+                <th>Type</th>
+                <th>Interest Rate</th>
+                <th>Created Date</th>
+            
+            </tr>
+        </thead>
+         <tbody>
+            {% for account in accounts %}
+                <tr>
+                    <td>{{account.name}}</td>
+                    <td>{{account.balance}}</td>
+                    <td>{{account.account_typeid.name}}</td>
+                    <td>{{account.account_typeid.interest_rate}}%</td>
+                    <td>{{account.created_at|date:'d-m-Y'}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        })
+    </script>
+</body>
+</html>
