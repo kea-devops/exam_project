@@ -8,14 +8,11 @@ from django.contrib.auth.decorators import login_required
 
 
 def index(request):
-    try:
-        customer = Customer.objects.get(user_id=request.user)
-        accounts = Account.objects.filter(customerid=customer).select_related('account_typeid')
-
-        context = {'customer': customer, 'accounts': accounts}
-        return render(request, 'banking/customer/index.html', context)
-    except Customer.DoesNotExist:
-        return HttpResponse('You are not a customer.')
+    customer = get_object_or_404(Customer, user_id=request.user)
+    accounts = Account.objects.filter(customerid=customer).select_related('account_typeid')
+    context = {'customer': customer, 'accounts': accounts}
+    return render(request, 'banking/customer/index.html', context)
+    
 
 def create_account(request):
     customer = Customer.objects.get(user_id=request.user)
