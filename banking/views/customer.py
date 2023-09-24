@@ -25,7 +25,7 @@ def create_account(request):
        account_form = AccountForm(request.POST)
        if account_form.is_valid():
           account_type = get_object_or_404(Account_type, name=request.POST['account_type'])
-          if request.POST['account_type'] == 'Loan' and customer.customer_rank.name not in ['gold', 'silver']:
+          if request.POST['account_type'] == 'Loan' and customer.customer_rank.name not in ['Gold', 'Silver']:
              return HttpResponse('Only gold and silver ranked customers can apply for loans. <a href="/customer/account/">Go back</a>')
           account_form.instance.customerid = customer
           account_form.instance.account_typeid = account_type   
