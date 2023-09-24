@@ -12,7 +12,9 @@
 
     <h1>Customer Dashboard</h1>
 
-    <h2>Accounts</h2>
+    <h2>Hello {{ customer.first_name }} {{ customer.last_name }}</h2>
+
+    <h2>Accounts <a href="{% url 'banking:customer/account' %}">+</a></h2>
     <table>
         <thead>
             <tr>
@@ -21,6 +23,7 @@
                 <th>Type</th>
                 <th>Interest Rate</th>
                 <th>Created Date</th>
+            
             </tr>
         </thead>
          <tbody>
@@ -35,7 +38,7 @@
             {% endfor %}
         </tbody>
     </table>
-
+    
 
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {
