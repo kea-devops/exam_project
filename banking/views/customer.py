@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from banking.models.customer import Customer
-from banking.models.account import Account
+from banking.models.account import Account, LoanApplication
 from banking.models.account_type import Account_type
 from banking.forms.new_account import AccountForm
 from django.contrib.auth.decorators import login_required
@@ -10,7 +10,8 @@ from django.contrib.auth.decorators import login_required
 def index(request):
     customer = get_object_or_404(Customer, user_id=request.user)
     accounts = Account.objects.filter(customerid=customer).select_related('account_typeid')
-    context = {'customer': customer, 'accounts': accounts}
+    loan_applications = LoanApplication.objects.filter(customerid=customer)
+    context = {'customer': customer, 'accounts': accounts, 'loan_applications': loan_applications}
     return render(request, 'banking/customer/index.html', context)
     
 
