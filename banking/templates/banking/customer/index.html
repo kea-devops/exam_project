@@ -38,8 +38,24 @@
             {% endfor %}
         </tbody>
     </table>
-    
 
+    <h2>Loan Applications <a href="{% url 'banking:customer/apply_loan' %}">+</a></h2>
+    <table>
+        <thead>
+               <tr>
+                   <th>Amount</th>
+                   <th>Account</th>
+               </tr>
+        </thead>
+        <tbody>
+           {% for loan_application in loan_applications %}
+               <tr>
+                   <td>${{ loan_application.amount }}</td>
+                   <td>{{ loan_application.account.name }}</td>
+               </tr>
+           {% endfor %}
+        </tbody>    
+    </table>
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';

@@ -10,16 +10,17 @@
 <body>
     {% include 'snippets/nav.html' %}
 
-    <h1>Create Account</h1>
+    <h1>Apply for a loan</h1>
 
 
     <form method="post">
         {% csrf_token %}
-        {{ account_form.as_p }}
+        {{ loan_form.as_p }}
 
 
-        <button type="submit">Create Account</button>
+        <button type="submit">Create Loan Application</button>
     </form>
+    <a href="{% url 'banking:customer' %}">Go back to Dashboard</a>
 
 
     <script>
