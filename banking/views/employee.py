@@ -39,7 +39,6 @@ def customer(request):
         customer_form = CustomerForm(request.POST)
         if customer_form.is_valid():
             customer = customer_form.instance
-            group = Group.objects.get(name='customers')
             user = User(
                 username=customer.email,
                 email=customer.email,
@@ -47,8 +46,6 @@ def customer(request):
                 last_name=customer.last_name,
                 password=make_password(request.POST['password'])
             )
-            user.save()
-            user.groups.add(group)
             user.save()
 
             customer_form.instance.user_id = user
