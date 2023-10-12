@@ -10,10 +10,9 @@ class Account(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
-
+        return self.name    
 class LoanApplication(models.Model):
-      customerid = models.ForeignKey(Customer, on_delete=models.PROTECT)
+      customerid = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='loan_applications')
       amount = models.DecimalField(max_digits=10, decimal_places=2)
       account = models.ForeignKey(Account, on_delete=models.PROTECT)
       STATUS_CHOICES = (

@@ -1,15 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User, Group
-from django.db.models import Sum
+from django.contrib.auth.models import User
+from django.db import transaction
+from django.db.models import Q
+
 from banking.forms.new_customer import CustomerForm
 from banking.forms.new_account import AccountForm
 from banking.models.costumer_rank import Customer_rank
 from banking.models.customer import Customer
-from banking.models.account import Account
+from banking.models.account import Account, LoanApplication
 from banking.models.account_type import Account_type
-from banking.models.ledger import Ledger
+from banking.models.ledger import Ledger, generate_balance
 
 @login_required
 def index(request):
@@ -25,7 +27,9 @@ def index(request):
     if page > page_count:
         page = page_count
 
-    customers = Customer.objects.all().select_related('user_id', 'customer_rank')[(page)*10:(page)*10+10]
+    customers = Customer.objects.all().prefetch_related('loan_applications').select_related('user_id', 'customer_rank')[(page)*10:(page)*10+10]
+    for customer in customers:
+        customer.pending_loan_applications = customer.loan_applications.filter(status='pending').count
 
     context = { 'customers': customers, 'page': page+1, 'page_count': page_count+1 }
 
@@ -71,18 +75,12 @@ def customer_details(request, pk):
         customer.save()
         return HttpResponse(f'Customer Rank: {rank.name}')
 
-
     ranks = Customer_rank.objects.all()
-    accounts = Account.objects.filter(customerid=customer).select_related('account_typeid')
-    for account in accounts:
-        balance = Ledger.objects.filter(customer_id=customer).aggregate(Sum('amount'))['amount__sum']
-        if balance is None:
-            account.balance = 0
-        else:
-            account.balance = balance
-        account.balance = '{0:.2f}'.format(account.balance)
+    accounts = Account.objects.filter(customerid=customer)
+    loans = generate_balance(accounts.filter(account_typeid__name='Loan'))
+    accounts = generate_balance(accounts.filter(~Q(account_typeid__name='Loan')))
 
-    context = { 'customer': customer, 'accounts': accounts, 'ranks': ranks }
+    context = { 'customer': customer, 'accounts': accounts, 'loans': loans, 'ranks': ranks }
 
     return render(request, 'banking/employee/customer_details.html', context)
 
@@ -103,3 +101,60 @@ def customer_account(request, pk):
 
     context = { 'customer': customer, 'account_form': account_form }
     return render(request, 'banking/employee/account.html', context)
+
+@login_required
+def loan_application_list(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    loan_applications = customer.loan_applications.all()[::-1]
+
+    context = { 'customer': customer, 'loan_applications': loan_applications }
+    return render(request, 'banking/employee/customer_loan_applications.html', context)
+
+@login_required
+def loan_application_details(request, customer_pk, application_pk):
+    if request.method == 'PATCH':
+        loan_application = get_object_or_404(LoanApplication, pk=application_pk)
+        status = request.PATCH['status']
+        if status == 'denied':
+            loan_application.status = request.PATCH['status']
+            
+        elif status == 'approved':
+            try:
+                loan_application.status = request.PATCH['status']
+                loan_size = loan_application.amount 
+
+                debit_account = Account.objects.get(pk=loan_application.account.pk)
+
+                credit_account = Account(
+                    customerid=Customer.objects.get(pk=customer_pk),
+                    account_typeid=Account_type.objects.get(name='Loan'),
+                    name=f'{debit_account.name}_loan',
+                    
+                )
+                ledger_entry_debit = Ledger(
+                    customer_id=Customer.objects.get(pk=customer_pk),
+                    account_id=debit_account,
+                    amount=loan_size
+                )
+                ledger_entry_credit = Ledger(
+                    customer_id=Customer.objects.get(pk=customer_pk),
+                    account_id=credit_account,
+                    amount=-loan_size
+                )
+                
+                with transaction.atomic():
+                    credit_account.save()
+                    ledger_entry_debit.save()
+                    ledger_entry_credit.save()
+                    loan_application.save()
+                
+            except:
+                return HttpResponse('Internal Server Error')
+        else:
+            return HttpResponse('Invalid Status')
+        
+        loan_application.save()
+    
+    response = redirect(f'/employee/customer/{customer_pk}/loan_applications')
+    response['HX-Refresh'] = 'true'
+    return response

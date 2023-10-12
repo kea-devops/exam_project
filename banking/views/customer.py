@@ -1,18 +1,23 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from banking.models.customer import Customer
+from django.db.models import Q, Sum
+
+from banking.forms.new_loan_application import LoanApplicationForm
 from banking.models.account import Account, LoanApplication
+from banking.models.ledger import Ledger, generate_balance
 from banking.models.account_type import Account_type
 from banking.forms.new_account import AccountForm
-from banking.forms.new_loan_application import LoanApplicationForm
-from django.contrib.auth.decorators import login_required
+from banking.models.customer import Customer
 
 
 def index(request):
     customer = get_object_or_404(Customer, user_id=request.user)
-    accounts = Account.objects.filter(customerid=customer).select_related('account_typeid')
+    accounts = Account.objects.filter(customerid=customer)
+    loans = generate_balance(accounts.filter(account_typeid__name='Loan'))
+    accounts = generate_balance(accounts.filter(~Q(account_typeid__name='Loan')))
+    
     loan_applications = LoanApplication.objects.filter(customerid=customer)
-    context = {'customer': customer, 'accounts': accounts, 'loan_applications': loan_applications}
+    context = {'customer': customer, 'accounts': accounts, 'loans': loans, 'loan_applications': loan_applications}
     return render(request, 'banking/customer/index.html', context)
     
 

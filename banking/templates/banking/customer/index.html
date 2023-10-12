@@ -19,7 +19,7 @@
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Balance</th>
+                <th>Balance ($)</th>
                 <th>Type</th>
                 <th>Interest Rate</th>
                 <th>Created Date</th>
@@ -39,19 +39,49 @@
         </tbody>
     </table>
 
+    <br>
+
+    <h2>Loans</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Amount ($)</th>
+                <th>Interest Rate</th>
+                <th>Approval Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+                <tr>
+                    <td>{{loan.balance}}</td>
+                    <td>{{loan.account_typeid.interest_rate}}%</td>
+                    <td>{{loan.created_at|date:'d-m-Y'}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>    
+    </table>
+
+    {% if loans|length == 0 %}
+        <p>You currently has no loans</p>
+    {% endif %}
+
+    <br>
+
     <h2>Loan Applications <a href="{% url 'banking:customer/apply_loan' %}">+</a></h2>
     <table>
         <thead>
                <tr>
-                   <th>Amount</th>
+                   <th>Amount ($)</th>
                    <th>Account</th>
+                   <th>Status</th>
                </tr>
         </thead>
         <tbody>
            {% for loan_application in loan_applications %}
                <tr>
-                   <td>${{ loan_application.amount }}</td>
+                   <td>{{ loan_application.amount }}</td>
                    <td>{{ loan_application.account.name }}</td>
+                   <td>{{ loan_application.status }}</td>
                </tr>
            {% endfor %}
         </tbody>    
