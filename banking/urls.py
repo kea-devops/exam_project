@@ -13,4 +13,6 @@ urlpatterns = [
     path('employee/customer', employee.customer, name='employee/customer'),
     path('employee/customer/<int:pk>', employee.customer_details, name='employee/customer_pk'),
     path('employee/customer/<int:pk>/account', employee.customer_account, name='employee/customer/account'),
+    path('employee/customer/<int:pk>/loan_applications', employee.loan_application_list, name='employee/customer/loan_applications_list'),
+    path('employee/customer/<int:customer_pk>/loan_applications/<int:application_pk>', employee.loan_application_details, name='employee/customer/loan_applications_details'),
 ]

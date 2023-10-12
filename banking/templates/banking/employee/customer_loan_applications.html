@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/htmx.org@1.9.3" integrity="sha384-lVb3Rd/Ca0AxaoZg5sACe8FJKF0tnUgR2Kd7ehUOG5GCcROv5uBIZsOqovBAcWua" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holiday.css@0.9.8" />
+    <title>Banking System</title>
+</head>
+<body>
+    {% include 'snippets/nav.html' %}
+    
+    <h1>Customer Overview</h1>
+
+    <a href="{% url 'banking:employee' %}">⬅️ Back</a>
+
+    <hr>
+
+    <h2>Customer Details</h2>
+
+    <div>First Name: <b>{{ customer.user_id.first_name }}</b></div>
+    <div>Last Name: <b>{{ customer.user_id.last_name }}</b></div>
+    <div>Email: <b>{{ customer.user_id.email }}</b></div>
+    <div>Phone: <b>{{ customer.phone }}</b></div>
+    <div id="customer_rank">Customer Rank: {{ customer.customer_rank.name }}</div>
+        
+    <h2>Loan Applications</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Amount ($)</th>
+                <th>Debit Account</th>
+                <th>Status</th>
+                <th colspan="2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in loan_applications %}
+                <tr>
+                    <td>{{application.amount}}</td>
+                    <td>{{application.account}}</td>
+                    <td class="status">{{application.status}}</td>
+
+                    {% if application.status == 'pending' %}
+                        <td>
+                            <form 
+                                hx-patch="{% url 'banking:employee/customer/loan_applications_details' customer.pk application.pk %}"
+                                hx-target="body"
+                            >
+                                <input type="hidden" name="status" value="approved">
+                                <button type="submit">Approve</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form 
+                                hx-patch="{% url 'banking:employee/customer/loan_applications_details' customer.pk application.pk %}"
+                                hx-target="body"
+                            >
+                                <input type="hidden" name="status" value="denied">
+                                <button type="submit" style="background-color: darkred;">Deny</button>
+                            </form>
+                        </td>
+                    {% else %}
+                        <td>n/a</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>    
+            
+    </table>
+    
+    {% if accounts|length == 0 %}
+        <p>This customer currently has no accounts</p>
+    {% endif %}
+    
+
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        })
+    </script>
+</body>
+</html>

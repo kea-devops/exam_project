@@ -39,14 +39,14 @@
 
     </div>
         
+    <hr>
     <h2>Customer Accounts</h2>
     <a href="{% url 'banking:employee/customer/account' customer.pk %}">Create new</a>
-
     <table>
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Balance</th>
+                <th>Balance ($)</th>
                 <th>Type</th>
                 <th>Interest Rate</th>
                 <th>Created Date</th>
@@ -69,6 +69,36 @@
     {% if accounts|length == 0 %}
         <p>This customer currently has no accounts</p>
     {% endif %}
+
+    <br>
+
+    <h2>Customer Loans</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Credit ($)</th>
+                <th>Interest Rate</th>
+                <th>Approval Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+                <tr>
+                    <td>{{loan.name}}</td>
+                    <td>{{loan.balance}}</td>
+                    <td>{{loan.account_typeid.interest_rate}}%</td>
+                    <td>{{loan.created_at|date:'d-m-Y'}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>    
+    </table>
+
+    {% if loans|length == 0 %}
+        <p>This customer currently has no loans</p>
+    {% endif %}
+
+    <div style="height: 200px"></div>
     
 
     <script>
