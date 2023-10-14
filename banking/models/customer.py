@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .costumer_rank import Customer_rank
 
 class Customer(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
     customer_rank = models.ForeignKey(Customer_rank, on_delete=models.PROTECT)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)

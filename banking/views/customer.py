@@ -11,18 +11,18 @@ from banking.models.customer import Customer
 
 
 def index(request):
-    customer = get_object_or_404(Customer, user_id=request.user)
-    accounts = Account.objects.filter(customerid=customer)
-    loans = generate_balance(accounts.filter(account_typeid__name='Loan'))
-    accounts = generate_balance(accounts.filter(~Q(account_typeid__name='Loan')))
+    customer = get_object_or_404(Customer, user=request.user)
+    accounts = Account.objects.filter(customer=customer)
+    loans = generate_balance(accounts.filter(account_type__name='Loan'))
+    accounts = generate_balance(accounts.filter(~Q(account_type__name='Loan')))
     
-    loan_applications = LoanApplication.objects.filter(customerid=customer)
+    loan_applications = LoanApplication.objects.filter(customer=customer)
     context = {'customer': customer, 'accounts': accounts, 'loans': loans, 'loan_applications': loan_applications}
     return render(request, 'banking/customer/index.html', context)
     
 
 def create_account(request):
-    customer = Customer.objects.get(user_id=request.user)
+    customer = Customer.objects.get(user=request.user)
     account_form = AccountForm()
 
     if request.method == 'POST':
@@ -31,8 +31,8 @@ def create_account(request):
           account_type = get_object_or_404(Account_type, name=request.POST['account_type'])
           if request.POST['account_type'] == 'Loan' and customer.customer_rank.name not in ['Gold', 'Silver']:
              return HttpResponse('Only gold and silver ranked customers can apply for loans. <a href="/customer/account/">Go back</a>')
-          account_form.instance.customerid = customer
-          account_form.instance.account_typeid = account_type   
+          account_form.instance.customer = customer
+          account_form.instance.account_type = account_type   
           account_form.save()
           return redirect(f'/customer/')
 
@@ -40,14 +40,14 @@ def create_account(request):
     return render(request, 'banking/customer/account.html', context)
 
 def apply_loan(request):
-    customer = get_object_or_404(Customer, user_id=request.user)
+    customer = get_object_or_404(Customer, user=request.user)
     if customer.customer_rank.name not in ['Gold', 'Silver']:
         return HttpResponse('Only gold and silver ranked customers can apply for loans. <a href="/customer/account/">Go back</a>')
     if request.method == 'POST':
        loan_form = LoanApplicationForm(request.POST)
        if loan_form.is_valid():
            loan_application = loan_form.save(commit=False)
-           loan_application.customerid = customer
+           loan_application.customer = customer
            loan_application.save()
            return redirect('banking:customer')
     else:

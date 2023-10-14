@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    
+    <br>
+    <br>
+    <a href="javascript:history.back()">⬅️ Back</a>
+    <br>
+    <p>Customer: <b>{{customer.last_name}}, {{customer.first_name}}</b></p>
+    
+    <h2>Customer Loans</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Amount ($)</th>
+                <th>Interest Rate</th>
+                <th>Approval Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+                <tr>
+                    <td>{{loan.name}}</td>
+                    <td>{{loan.balance}}</td>
+                    <td>{{loan.account_type.interest_rate}}%</td>
+                    <td>{{loan.created_at|date:'d-m-Y'}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>    
+    </table>
+
+    {% if loans|length == 0 %}
+        <p>This customer currently has no loans</p>
+    {% endif %}
+{% endblock %}

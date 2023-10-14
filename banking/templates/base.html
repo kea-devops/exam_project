@@ -17,6 +17,7 @@
             {% else %}
                 <a   href="{% url 'banking:customer' %}">Customer Dashboard</a>
             {% endif %}
+            |
             <a href="{% url 'logout' %}">Logout</a>
         {% else %}
             <a href="{% url 'login' %}">Login</a>

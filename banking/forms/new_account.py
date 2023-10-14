@@ -8,8 +8,8 @@ class AccountForm(ModelForm):
         types = Account_type.objects.all()
         pairs = []
         for t in types:
-            
-            pairs.append((t.name, f'{t.name} ({t.interest_rate}%)'))
+            if t.name != 'Loan':
+                pairs.append((t.name, f'{t.name} ({t.interest_rate}%)'))
         return tuple(pairs)
 
 

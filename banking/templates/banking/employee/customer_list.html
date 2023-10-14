@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <h1>
+        Customers 
+        <span
+            onclick="document.querySelector('dialog').showModal()"
+            style="cursor: pointer;"
+        >➕</span>
+    </h1>
+
+    <dialog>
+        <header>Create new Customer</header>
+        <form method="POST" actions="{% url 'banking:employee/customers' %}">
+            {% csrf_token %}
+            {{ customer_form }}
+            <br>
+            <menu>
+                <button>Submit</button>
+                <span style="cursor: pointer;" onclick="document.querySelector('dialog').close()">Cancel</span>
+            </menu>
+        </form>
+    </dialog>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>Email</th>
+                <th>Rank</th>
+                <th colspan="4"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.user.last_name }}</td>
+                    <td>{{ customer.user.first_name }}</td>
+                    <td>{{ customer.user.email }}</td>
+                    <td>{{ customer.customer_rank.name }}</td>
+                    <td><a href="{% url 'banking:employee/customer' customer.pk %}">Details</a></td>
+                    <td><a href="{% url 'banking:employee/accounts' customer.pk %}">Accounts</a></td>
+                    <td><a href="{% url 'banking:employee/loan_applications' customer.pk %}">Loan Applications ({{ customer.pending_loan_applications }})</a></td>
+                    <td><a href="{% url 'banking:employee/loans' customer.pk %}">Loans</a></td>
+                </tr>
+            {% endfor %}
+    </table>
+    <div>
+
+    </div>
+    <div>
+        <!-- Paginator -->
+        <a href="{% url 'banking:employee' %}?page={{ page|add:'-1' }}">&lt;</a>
+        <span>page {{ page }} of {{ page_count }}</span>
+        <a href="{% url 'banking:employee' %}?page={{ page|add:'1' }}">&gt;</a>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <h1>{{ account.name }}</h1>
+
+    <a href="javascript:history.back()">⬅️ Back</a>
+
+    <h2>Account Details</h2>
+    <p>Owner: <b>{{customer.last_name}}, {{customer.first_name}}</b></p>
+    <p>Type: <b>{{account.account_type.name}}</b></p>
+    <p>Interest Rate: <b>{{account.account_type.interest_rate}}%</b></p>
+    <p>Balance ($): <b>{{account.balance}}</b></p>
+
+    <h2>Account Movements</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Amount ($)</th>
+                <th colspan="2">in/out</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movement in movements %}
+                <tr>
+                    <td>{{movement.created_at|date:'Y-m-d H:i'}}</td>
+                    <td>{{movement.amount}}</td>
+                    <td>
+                        {% if movement.amount > 0 %}
+                            &#8592;
+                        {% else %}
+                            &#8594;
+                        {% endif %}
+                    </td>
+                    <td>{{movement.counterpart}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

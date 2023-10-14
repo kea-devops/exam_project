@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <h1>
+        Accounts
+        <span
+            onclick="document.querySelector('dialog').showModal()"
+            style="cursor: pointer;"
+        >➕</span>
+    </h1>
+
+    <a href="javascript:history.back()">⬅️ Back</a>
+
+    <dialog>
+        <header>Create New Account</header>
+
+        <form method="POST" actions="{% url 'banking:employee/accounts' customer.pk %}">
+            {% csrf_token %}
+            {{ account_form }}
+            <br>
+            <menu>
+                <button>Submit</button>
+                <span style="cursor: pointer;" onclick="document.querySelector('dialog').close()">Cancel</span>
+            </menu>
+        </form>
+    </dialog>
+
+    <br>
+    <br>
+    <p>Customer: <b>{{ customer.last_name }}, {{ customer.first_name }}</b></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Account Name</th>
+                <th>Balance ($)</th>
+                <th>Type</th>
+                <th>Interest Rate</th>
+                <th>Created Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+                <tr>
+                    <td>
+                        <a href="{% url 'banking:employee/account' customer.pk account.pk %}">
+                            {{account.name}}
+                        </a>
+                    </td>
+                    <td>{{account.balance}}</td>
+                    <td>{{account.account_type.name}}</td>
+                    <td>{{account.account_type.interest_rate}}%</td>
+                    <td>{{account.created_at|date:'d-m-Y'}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>    
+            
+    </table>
+
+    {% if accounts|length == 0 %}
+        <p>This customer currently has no accounts</p>
+    {% endif %}
+{% endblock %}
