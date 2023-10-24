@@ -1,33 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://unpkg.com/htmx.org@1.9.3" integrity="sha384-lVb3Rd/Ca0AxaoZg5sACe8FJKF0tnUgR2Kd7ehUOG5GCcROv5uBIZsOqovBAcWua" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holiday.css@0.9.8" />
-    <title>Banking System</title>
-</head>
-<body>
-    {% include 'snippets/nav.html' %}
-    
-    <h1>Customer Overview</h1>
+{% extends 'base.html' %}
 
-    <a href="{% url 'banking:employee' %}">⬅️ Back</a>
+{% block main %}
+    <h1>Customer Details</h1>
 
+    <a href="javascript:history.back()">⬅️ Back</a>
+    |
+    <a href="{% url 'banking:employee/accounts' customer.pk %}">Accounts</a>
+    |
+    <a href="{% url 'banking:employee/loans' customer.pk %}">Loans</a>
+    |
+    <a href="{% url 'banking:employee/loan_applications' customer.pk %}">Loan Applications</a>
     <hr>
 
     <h2>Customer Details</h2>
 
-    <div>First Name: <b>{{ customer.user_id.first_name }}</b></div>
-    <div>Last Name: <b>{{ customer.user_id.last_name }}</b></div>
-    <div>Email: <b>{{ customer.user_id.email }}</b></div>
+    <div>First Name: <b>{{ customer.user.first_name }}</b></div>
+    <div>Last Name: <b>{{ customer.user.last_name }}</b></div>
+    <div>Email: <b>{{ customer.user.email }}</b></div>
     <div>Phone: <b>{{ customer.phone }}</b></div>
     <div id="customer_rank">Customer Rank: {{ customer.customer_rank.name }}</div>
 
+    <br>
     <label><i>Change Customer Rank</i></label>
     <select 
         name="rank"
-        hx-patch="{% url 'banking:employee/customer_pk' customer.pk %}"
+        hx-patch="{% url 'banking:employee/customer' customer.pk %}"
         hx-trigger="change"
         hx-target="#customer_rank"
     >
@@ -36,75 +33,4 @@
             <option value="{{rank.name}}">{{rank.name}}</option>
         {% endfor %}
     </select>
-
-    </div>
-        
-    <hr>
-    <h2>Customer Accounts</h2>
-    <a href="{% url 'banking:employee/customer/account' customer.pk %}">Create new</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Balance ($)</th>
-                <th>Type</th>
-                <th>Interest Rate</th>
-                <th>Created Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for account in accounts %}
-                <tr>
-                    <td>{{account.name}}</td>
-                    <td>{{account.balance}}</td>
-                    <td>{{account.account_typeid.name}}</td>
-                    <td>{{account.account_typeid.interest_rate}}%</td>
-                    <td>{{account.created_at|date:'d-m-Y'}}</td>
-                </tr>
-            {% endfor %}
-        </tbody>    
-            
-    </table>
-    
-    {% if accounts|length == 0 %}
-        <p>This customer currently has no accounts</p>
-    {% endif %}
-
-    <br>
-
-    <h2>Customer Loans</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Credit ($)</th>
-                <th>Interest Rate</th>
-                <th>Approval Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for loan in loans %}
-                <tr>
-                    <td>{{loan.name}}</td>
-                    <td>{{loan.balance}}</td>
-                    <td>{{loan.account_typeid.interest_rate}}%</td>
-                    <td>{{loan.created_at|date:'d-m-Y'}}</td>
-                </tr>
-            {% endfor %}
-        </tbody>    
-    </table>
-
-    {% if loans|length == 0 %}
-        <p>This customer currently has no loans</p>
-    {% endif %}
-
-    <div style="height: 200px"></div>
-    
-
-    <script>
-        document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-        })
-    </script>
-</body>
-</html>
+{% endblock %}

@@ -31,8 +31,8 @@
                 <tr>
                     <td>{{account.name}}</td>
                     <td>{{account.balance}}</td>
-                    <td>{{account.account_typeid.name}}</td>
-                    <td>{{account.account_typeid.interest_rate}}%</td>
+                    <td>{{account.account_type.name}}</td>
+                    <td>{{account.account_type.interest_rate}}%</td>
                     <td>{{account.created_at|date:'d-m-Y'}}</td>
                 </tr>
             {% endfor %}
@@ -54,7 +54,7 @@
             {% for loan in loans %}
                 <tr>
                     <td>{{loan.balance}}</td>
-                    <td>{{loan.account_typeid.interest_rate}}%</td>
+                    <td>{{loan.account_type.interest_rate}}%</td>
                     <td>{{loan.created_at|date:'d-m-Y'}}</td>
                 </tr>
             {% endfor %}
