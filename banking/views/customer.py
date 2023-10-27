@@ -9,16 +9,19 @@ from banking.models.account_type import Account_type
 from banking.forms.new_account import AccountForm
 from banking.models.customer import Customer
 
-
 def index(request):
-    customer = get_object_or_404(Customer, user=request.user)
+    customer = get_object_or_404(Customer)
+    return redirect(f'/customers/{customer.pk}')
+
+def detail(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
     accounts = Account.objects.filter(customer=customer)
     loans = generate_balance(accounts.filter(account_type__name='Loan'))
     accounts = generate_balance(accounts.filter(~Q(account_type__name='Loan')))
-    
+
     loan_applications = LoanApplication.objects.filter(customer=customer)
     context = {'customer': customer, 'accounts': accounts, 'loans': loans, 'loan_applications': loan_applications}
-    return render(request, 'banking/customer/index.html', context)
+    return render(request, 'banking/customer/customer_detail.html', context)
     
 
 def create_account(request):

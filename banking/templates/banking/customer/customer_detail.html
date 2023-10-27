@@ -1,5 +1,5 @@
     {% extends 'base.html' %}
-    {% block main %}   
+    {% block main %}
 
     <h1>Customer Dashboard</h1>
 
@@ -14,7 +14,7 @@
                 <th>Type</th>
                 <th>Interest Rate</th>
                 <th>Created Date</th>
-            
+
             </tr>
         </thead>
          <tbody>
@@ -49,7 +49,7 @@
                     <td>{{loan.created_at|date:'d-m-Y'}}</td>
                 </tr>
             {% endfor %}
-        </tbody>    
+        </tbody>
     </table>
 
     {% if loans|length == 0 %}
@@ -75,7 +75,7 @@
                    <td>{{ loan_application.status }}</td>
                </tr>
            {% endfor %}
-        </tbody>    
+        </tbody>
     </table>
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {
