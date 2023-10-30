@@ -1,26 +1,33 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q, Sum
-
+from django.contrib.auth.decorators import login_required
 from banking.forms.new_loan_application import LoanApplicationForm
+from banking.forms.new_customer import CustomerForm
 from banking.models.account import Account, LoanApplication
 from banking.models.ledger import Ledger, generate_balance
 from banking.models.account_type import Account_type
 from banking.forms.new_account import AccountForm
 from banking.models.customer import Customer
 
+@login_required
 def index(request):
-    customer = get_object_or_404(Customer)
-    return redirect(f'/customers/{customer.pk}')
+    customer = get_object_or_404(Customer, user=request.user)
+    return redirect('banking:customer/detail', pk=customer.pk)
 
+@login_required
 def detail(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    accounts = Account.objects.filter(customer=customer)
-    loans = generate_balance(accounts.filter(account_type__name='Loan'))
-    accounts = generate_balance(accounts.filter(~Q(account_type__name='Loan')))
 
-    loan_applications = LoanApplication.objects.filter(customer=customer)
-    context = {'customer': customer, 'accounts': accounts, 'loans': loans, 'loan_applications': loan_applications}
+    if request.method == 'POST':
+       print("Inside if: ",request.method)
+       form = CustomerForm(request.POST, instance=customer, exclude_password_rank=True)
+       if form.is_valid():
+          form.save()       
+          return redirect('banking:customer/detail', pk=customer.pk)
+    else:
+       form = CustomerForm(instance=customer, exclude_password_rank=True)
+    context = {'customer': customer, 'customer_form': form}
     return render(request, 'banking/customer/customer_detail.html', context)
     
 
