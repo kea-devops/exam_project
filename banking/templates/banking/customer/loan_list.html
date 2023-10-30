@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+    <h1>Loans</h1>
+    <a href="javascript:history.back()">⬅️ Back</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Amount ($)</th>
+                <th>Interest Rate</th>
+                <th>Approval Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+                <tr>
+                    <td>{{loan.balance}}</td>
+                    <td>{{loan.account_type.interest_rate}}%</td>
+                    <td>{{loan.created_at|date:'d-m-Y'}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>    
+    </table>
+
+    {% if loans|length == 0 %}
+        <p>You currently has no loans</p>
+    {% endif %}
+
+{% endblock %}
