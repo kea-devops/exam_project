@@ -19,3 +19,28 @@ class CustomerForm(ModelForm):
     class Meta:
         model = Customer
         fields = ('first_name', 'last_name', 'email', 'phone')
+
+    def save(self, commit=True):
+        instance = super(CustomerForm, self).save(commit=False)
+
+        user = instance.user
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.email = self.cleaned_data['email']
+        user.username = self.cleaned_data['email']
+        user.save()
+
+        if commit:
+            instance.save()
+
+        return instance
+
+
+    def __init__(self, *args, **kwargs):
+        exclude_password_rank = kwargs.pop('exclude_password_rank', False)
+        super(CustomerForm, self).__init__(*args, **kwargs)
+
+        if exclude_password_rank:
+            del self.fields['password']
+            del self.fields['re_password']
+            del self.fields['customer_rank']
