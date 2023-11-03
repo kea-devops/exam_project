@@ -19,12 +19,11 @@ def index(request):
 def detail(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
 
-    if request.method == 'POST':
+    if request.method == 'PATCH':
        print("Inside if: ",request.method)
-       form = CustomerForm(request.POST, instance=customer, exclude_password_rank=True)
+       form = CustomerForm(request.PATCH, instance=customer, exclude_password_rank=True)
        if form.is_valid():
-          form.save()       
-          return redirect('banking:customer/detail', pk=customer.pk)
+          customer = form.save()       
     else:
        form = CustomerForm(instance=customer, exclude_password_rank=True)
     context = {'customer': customer, 'customer_form': form}

@@ -23,7 +23,7 @@
 
     <dialog>
         <header>Change Customer Information</header>
-        <form method="POST" action="{% url 'banking:customer/detail' pk=customer.pk %}">
+        <form hx-target="body" hx-patch="{% url 'banking:customer/detail' pk=customer.pk %}">
             {% csrf_token %}
             {{ customer_form.as_p }}
             <br>
@@ -34,10 +34,4 @@
         </form>
     </dialog>
 
-    <script>
-        document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-        })
-
-    </script>
 {% endblock %}
