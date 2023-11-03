@@ -19,3 +19,11 @@ class AccountForm(ModelForm):
     class Meta:
         model = Account
         fields = ('name',)
+
+
+    def __init__(self, *args, **kwargs):
+        exclude_type = kwargs.pop('exclude_type', False)
+        super(AccountForm, self).__init__(*args, **kwargs)
+
+        if exclude_type:
+            del self.fields['account_type']

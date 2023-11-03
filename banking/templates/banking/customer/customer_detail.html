@@ -14,6 +14,8 @@
     <br>
     <p2>Customer Rank: {{ customer.customer_rank.name }}</p2>
     <br>
+    <a href="{% url 'banking:customer/accounts' customer.pk %}">Accounts</a>
+    <br>
     <a href="{% url 'banking:customer/loan_applications' customer.pk %}">Loan Applications</a>
     <br>
     <a href="{% url 'banking:customer/loans' customer.pk %}">Loans</a>

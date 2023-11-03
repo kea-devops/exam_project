@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+    <h1>Accounts</h1>
+    <a href="javascript:history.back()">⬅️ back</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name ($)</th>
+                <th>Balance ($)</th>
+                <th>Type</th>
+                <th>Interest Rate</th>
+                <th>Created Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+                <tr>
+                    <td><a href="{% url 'banking:customer/account' customer.pk account.pk %}"> {{account.name}} </a></td>
+                    <td>{{account.balance}}</td>
+                    <td>{{account.account_type.name}}
+                    <td>{{account.account_type.interest_rate}}%</td>
+                    <td>{{account.created_at|date:'d-m-Y'}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if accounts|length == 0 %}
+        <p>You currently have no accounts</p>
+    {% endif %}
+
+{% endblock %}
+

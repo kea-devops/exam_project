@@ -30,31 +30,36 @@ def detail(request, pk):
     context = {'customer': customer, 'customer_form': form}
     return render(request, 'banking/customer/customer_detail.html', context)
     
+@login_required
+def account_list(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    accounts = generate_balance(Account.objects.filter(~Q(account_type__name='Loan'), customer=pk))
+    print("Accounts = ", accounts)
+    context = {'customer': customer, 'accounts': accounts}
+    return render(request, 'banking/customer/account_list.html', context)
 
-def create_account(request):
-    customer = Customer.objects.get(user=request.user)
-    account_form = AccountForm()
-
+@login_required
+def account_details(request, customer_pk, account_pk):
+    customer = get_object_or_404(Customer, pk=customer_pk)
+    account = generate_balance([get_object_or_404(Account, pk=account_pk)])[0]
+    form = AccountForm(request.POST, instance=account, exclude_type=True)
     if request.method == 'POST':
-       account_form = AccountForm(request.POST)
-       if account_form.is_valid():
-          account_type = get_object_or_404(Account_type, name=request.POST['account_type'])
-          if request.POST['account_type'] == 'Loan' and customer.customer_rank.name not in ['Gold', 'Silver']:
-             return HttpResponse('Only gold and silver ranked customers can apply for loans.')
-          account_form.instance.customer = customer
-          account_form.instance.account_type = account_type   
-          account_form.save()
-          return redirect(f'/customer/')
-
-    context = {'customer': customer, 'account_form': account_form}
-    return render(request, 'banking/customer/account.html', context)
+       if form.is_valid():
+          form.save()
+          return redirect('banking:customer/account', customer_pk=customer.pk, account_pk=account.pk)
+       else:
+          form = AccountForm(instance.account, exclude_type=True)
+    context = {'customer': customer, 'account': account, 'form': form}
+    return render(request, 'banking/customer/account_details.html', context)
 
 @login_required
 def loan_application_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     loan_applications = LoanApplication.objects.filter(customer=customer)
+
     if customer.customer_rank.name not in ['Gold', 'Silver']:
         return HttpResponse('Only gold and silver ranked customers can apply for loans.')
+
     if request.method == 'POST':
        loan_form = LoanApplicationForm(request.POST)
        if loan_form.is_valid():
@@ -72,7 +77,7 @@ def loan_application_list(request, pk):
 def loans_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     loans = generate_balance(Account.objects.filter(account_type__name='Loan', customer=pk))
-
+    print("Loans = ", loans)
     context = { 'customer': customer, 'loans': loans }
     return render(request, 'banking/customer/loan_list.html', context)
    
