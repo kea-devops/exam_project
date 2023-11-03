@@ -21,7 +21,7 @@
         </thead>
         <tbody>
             {% for application in loan_applications %}
-                {% if application.status == pending %}
+                {% if application.status == 'pending' %}
                 <tr>
                     <td>{{application.amount}}</td>
                     <td>{{application.account}}</td>
@@ -68,7 +68,7 @@
         </thead>
         <tbody>
             {% for application in loan_applications %}
-                {% if application.status != pending %}
+                {% if application.status != 'pending' %}
                 <tr>
                     <td>{{application.amount}}</td>
                     <td>{{application.account}}</td>
