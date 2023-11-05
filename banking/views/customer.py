@@ -20,7 +20,6 @@ def detail(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
 
     if request.method == 'PATCH':
-       print("Inside if: ",request.method)
        form = CustomerForm(request.PATCH, instance=customer, exclude_password_rank=True)
        if form.is_valid():
           customer = form.save()       
@@ -33,7 +32,6 @@ def detail(request, pk):
 def account_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     accounts = generate_balance(Account.objects.filter(~Q(account_type__name='Loan'), customer=pk))
-    print("Accounts = ", accounts)
     context = {'customer': customer, 'accounts': accounts}
     return render(request, 'banking/customer/account_list.html', context)
 
@@ -41,13 +39,15 @@ def account_list(request, pk):
 def account_details(request, customer_pk, account_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
     account = generate_balance([get_object_or_404(Account, pk=account_pk)])[0]
-    form = AccountForm(request.POST, instance=account, exclude_type=True)
-    if request.method == 'POST':
+
+    if request.method == 'PATCH':
+       form = AccountForm(request.PATCH, instance=account, exclude_type=True)
        if form.is_valid():
-          form.save()
-          return redirect('banking:customer/account', customer_pk=customer.pk, account_pk=account.pk)
-       else:
-          form = AccountForm(instance.account, exclude_type=True)
+          account.name = form.cleaned_data['name']
+          account.save()
+    else:
+       form = AccountForm(instance=account, exclude_type=True)
+    
     context = {'customer': customer, 'account': account, 'form': form}
     return render(request, 'banking/customer/account_details.html', context)
 
@@ -60,14 +60,16 @@ def loan_application_list(request, pk):
         return HttpResponse('Only gold and silver ranked customers can apply for loans.')
 
     if request.method == 'POST':
-       loan_form = LoanApplicationForm(request.POST)
+       loan_form = LoanApplicationForm(customer, request.POST)
        if loan_form.is_valid():
            loan_application = loan_form.save(commit=False)
+           account_name = request.POST.get('account')
+           account = Account.objects.get(name=account_name)
+           loan_application.account = account
            loan_application.customer = customer
            loan_application.save()
-           print("Loan application = ",loan_application)
     else:
-       loan_form = LoanApplicationForm()
+       loan_form = LoanApplicationForm(customer)
 
     context = {'customer': customer, 'loan_form': loan_form, 'loan_applications': loan_applications}
     return render(request, 'banking/customer/loan_application_list.html', context)
