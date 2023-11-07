@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+    <h1>Loan Applications
+        <span
+            onclick="document.querySelector('dialog').showModal()"
+            style="cursor: pointer;"
+        >+</span>
+    </h1>
+
+    <a href="javascript:history.back()">⬅️Back</a>
+
+
+    <dialog>
+        <header>Apply for a new loan</header>
+
+        <form method="POST" actions="{% url 'banking:customer/loan_applications' customer.pk %}">
+            {% csrf_token %}
+            {{ loan_form.as_p }}
+            <br>
+            <menu>
+                <button>Submit</button>
+                <span style="cursor: pointer;" onclick="document.querySelector('dialog').close()">Cancel</span>
+            </menu>
+        </form>
+    </dialog>
+    
+    <table>
+        <thead>
+               <tr>
+                   <th>Account ($)</th>
+                   <th>Amount</th>
+                   <th>Status</th>
+               </tr>
+        </thead>
+        <tbody>
+           {% for loan_application in loan_applications %}
+               <tr>
+                   <td>{{ loan_application.account.name }}</td>
+                   <td>{{ loan_application.amount }}</td>
+                   <td>{{ loan_application.status }}</td>
+               </tr>
+           {% endfor %}
+        </tbody>    
+    </table>
+
+{% endblock %}

@@ -11,6 +11,10 @@ class LoanApplicationForm(forms.ModelForm):
            to_field_name='name'
       )      
 
+      def __init__(self, customer, *args, **kwargs):
+           super(LoanApplicationForm, self).__init__(*args, **kwargs)
+
+           self.fields['account'].queryset = Account.objects.filter(customer=customer).exclude(account_type__name='Loan')
 
       class Meta:
            model = LoanApplication

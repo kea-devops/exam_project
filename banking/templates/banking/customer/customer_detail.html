@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block main %}
+    <h1>Customer Dashboard</h1>
+
+    <h2>Hello {{ customer.user.first_name }} {{ customer.user.last_name }}</h2>
+
+    <p2>First Name: <b>{{ customer.first_name }}</b></p2>
+    <br>
+    <p2>Last Name: <b>{{ customer.last_name }}</b></p2>
+    <br>
+    <p2>Email: <b>{{ customer.email }}</b></p2>
+    <br>
+    <p2>Phone: <b>{{ customer.phone }}</b></p2>
+    <br>
+    <p2>Customer Rank: {{ customer.customer_rank.name }}</p2>
+    <br>
+    <a href="{% url 'banking:customer/accounts' customer.pk %}">Accounts</a>
+    <br>
+    <a href="{% url 'banking:customer/loan_applications' customer.pk %}">Loan Applications</a>
+    <br>
+    <a href="{% url 'banking:customer/loans' customer.pk %}">Loans</a>
+    <h3>Change Customer Information <span onclick="document.querySelector('dialog').showModal()" style="cursor: pointer;">+</span></h3>
+
+    <dialog>
+        <header>Change Customer Information</header>
+        <form hx-target="body" hx-patch="{% url 'banking:customer/detail' pk=customer.pk %}">
+            {% csrf_token %}
+            {{ customer_form.as_p }}
+            <br>
+            <menu>
+                <button>Submit</button>
+                <span style="cursor: pointer;" onclick="document.querySelector('dialog').close()">Cancel</span>
+            </menu>
+        </form>
+    </dialog>
+
+{% endblock %}

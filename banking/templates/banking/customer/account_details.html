@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block main %}
+    <h1>{{ account.name }}</h1>
+    
+    <a href="javascript:window.history.back()">⬅️ Back</a>
+
+    <p>Type: <b>{{account.account_type.name}}</b></p>
+    <p>Interest Rate: <b>{{account.account_type.interest_rate}}%</b></p>
+    <p>Balance ($): <b>{{account.balance}}</b></p>
+
+    <h3>Change Account Name <span onclick="document.querySelector('dialog').showModal()" style="cursor: pointer;">+</span></h3>
+    <dialog>
+        <header>Change Account Name</header>
+        <form hx-target="body" hx-patch="{% url 'banking:customer/account' customer.pk account.pk%}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <br>
+            <menu>
+                <button>Submit</button>
+                <span style="cursor: pointer;" onclick="document.querySelector('dialog').close()">Cancel</span>
+            </menu>
+        </form>
+    </dialog>
+
+
+
+{% endblock %}
+
