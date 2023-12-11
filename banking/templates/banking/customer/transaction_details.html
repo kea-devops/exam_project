@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block main %}
+<h1>Transaction Details</h1>
+<p>Transaction ID: {{ transaction.id }}</p>
+<h2>Ledger Entries</h2>
+<ul>
+    {% for ledger in ledgers %}
+    <li>Account: {{ ledger.account.name }}, Amount: {{ ledger.amount }}, Date: {{ ledger.created_at }}</li>
+    {% empty %}
+    <li>No ledger entries found.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
