@@ -101,7 +101,7 @@ def account_movements(request, account_id):
     return render(request, 'banking/customer/account_movements.html', context)
 
 @login_required
-def customer_transaction_details(request, customer_id, transaction_id):
+def transaction_details(request, customer_id, transaction_id):
     customer = get_object_or_404(Customer, pk=customer_id, user=request.user)
     transaction = get_object_or_404(Transaction, pk=transaction_id)
     ledgers = Ledger.objects.filter(transaction=transaction, customer=customer).order_by('-created_at')
