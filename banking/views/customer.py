@@ -9,6 +9,7 @@ from banking.models.ledger import Ledger, generate_balance
 from banking.models.account_type import Account_type
 from banking.forms.new_account import AccountForm
 from banking.models.customer import Customer
+from banking.models.ledger import Transaction
 
 @login_required
 def index(request):
@@ -82,3 +83,31 @@ def loans_list(request, pk):
     context = { 'customer': customer, 'loans': loans }
     return render(request, 'banking/customer/loan_list.html', context)
    
+
+@login_required
+def account_movements(request, account_id):
+    account = get_object_or_404(Account, pk=account_id)
+    if account.customer.user != request.user:
+        return HttpResponse('Unauthorized', status=401)
+
+    movements = Ledger.objects.filter(account=account).order_by('-created_at')
+    balance = movements.aggregate(Sum('amount'))['amount__sum'] or 0
+
+    context = {
+        'account': account,
+        'movements': movements,
+        'balance': balance,
+    }
+    return render(request, 'banking/customer/account_movements.html', context)
+
+@login_required
+def transaction_details(request, customer_id, transaction_id):
+    customer = get_object_or_404(Customer, pk=customer_id, user=request.user)
+    transaction = get_object_or_404(Transaction, pk=transaction_id)
+    ledgers = Ledger.objects.filter(transaction=transaction, customer=customer).order_by('-created_at')
+
+    context = {
+        'transaction': transaction,
+        'ledgers': ledgers,
+    }
+    return render(request, 'banking/customer/transaction_details.html', context)
