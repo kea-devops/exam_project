@@ -1,56 +1,72 @@
 {% extends 'base.html' %}
 
-{%  block main %}  
-
+{% block main %}
     <br>
     <br>
-    <a href="javascript:history.back()">⬅️ Back</a>
+    <a href="javascript:history.back()">__  Back</a>
     <br>
-    <p>Customer: <b>{{customer.last_name}}, {{customer.first_name}}</b></p>
-
+    <p>Customer: <b>{{ customer.last_name }}, {{ customer.first_name }}</b></p>
+    
     <h2>Pending</h2>
-
     <table>
         <thead>
             <tr>
                 <th>Amount ($)</th>
                 <th>Debit Account</th>
                 <th>Status</th>
-                <th colspan="2">Actions</th>
+                {% if request.user.username == 'admin' or username == 'supervisor' %}
+                    <th colspan="2">Actions</th>
+                {% endif %}
             </tr>
         </thead>
+        {% if request.user.username == 'admin' %}
         <tbody>
             {% for application in loan_applications %}
-                {% if application.status == 'pending' %}
+
                 <tr>
-                    <td>{{application.amount}}</td>
-                    <td>{{application.account}}</td>
-                    <td class="status">{{application.status}}</td>
-                    <td>
-                        <form 
-                            hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}"
-                            hx-target="body"
-                        >
-                            <input type="hidden" name="status" value="approved">
-                            <button type="submit">Approve</button>
-                        </form>
-                    </td>
-                    <td>
-                        <form 
-                            hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}"
-                            hx-target="body"
-                        >
-                            <input type="hidden" name="status" value="denied">
-                            <button type="submit" style="background-color: darkred;">Deny</button>
-                        </form>
-                    </td>
+                    <td>{{ application.amount }}</td>
+                    <td>{{ application.account }}</td>
+                    <td class="status">{{ application.status }}</td>
+
+                    {% if application.status == 'pending' %}
+                        {% if request.user.username == 'admin' %}
+                            <td>
+                                <form hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}" hx-target="body">
+                                    <input type="hidden" name="status" value="approved_employee">
+                                    <button type="submit">Approve (Admin)</button>
+                                </form>
+                            </td>
+                        {% endif %}
+                    {% endif %}
+              {% endfor %}
+        </tbody>
+        {% endif %}
+
+
+         {% if request.user.username == 'supervisor' %}
+        <tbody>
+            {% for application in loan_applications %}
+                {% if application.status == 'approved_employee' %}
+
+                <tr>
+                    <td>{{ application.amount }}</td>
+                    <td>{{ application.account }}</td>
+                    <td class="status">{{ application.status }}</td>
+
+                            <td>
+                                <form hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}" hx-target="body">
+                                    <input type="hidden" name="status" value="approved">
+                                    <button type="submit">Approve (Supervisor)</button>
+                                </form>
+                            </td>
+                    {% endif %}
                 </tr>
-                {% endif %}
             {% endfor %}
-        </tbody>    
-            
+        </tbody>
+        {% endif %}
+
     </table>
-    
+
     {% if accounts|length == 0 %}
         <p>This customer currently has no pending loan applications</p>
     {% endif %}
@@ -69,15 +85,14 @@
         <tbody>
             {% for application in loan_applications %}
                 {% if application.status != 'pending' %}
-                <tr>
-                    <td>{{application.amount}}</td>
-                    <td>{{application.account}}</td>
-                    <td class="status">{{application.status}}</td>  
-                </tr>
+                    <tr>
+                        <td>{{ application.amount }}</td>
+                        <td>{{ application.account }}</td>
+                        <td class="status">{{ application.status }}</td>
+                    </tr>
                 {% endif %}
             {% endfor %}
-        </tbody>    
-            
+        </tbody>
     </table>
-    
 {% endblock %}
+

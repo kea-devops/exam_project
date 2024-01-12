@@ -19,6 +19,9 @@ class LoanApplication(models.Model):
       STATUS_CHOICES = (
           ('pending', 'Pending Loan'),
           ('approved', 'Approved Loan'),
+          ('approved_employee', 'Approved by Employee'),
           ('denied', 'Denied Loan'),
       )
-      status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+      status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+      supervisor_approved = models.BooleanField(default=False)
