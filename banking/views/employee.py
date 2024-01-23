@@ -134,48 +134,59 @@ def loan_application_details(request, customer_pk, application_pk):
         status = request.PATCH['status']
         if status == 'denied':
             loan_application.status = request.PATCH['status']
-            
-        elif status == 'approved':
+            loan_application.supervisor_approved = False            
+        
+        elif status == 'approved_employee':
             try:
                 loan_application.status = request.PATCH['status']
-                loan_size = loan_application.amount 
-
-                tnx = Transaction()
-
-                debit_account = Account.objects.get(pk=loan_application.account.pk)
-
-                credit_account = Account(
-                    customer=Customer.objects.get(pk=customer_pk),
-                    account_type=Account_type.objects.get(name='Loan'),
-                    name=f'{debit_account.name}_loan',
-                    
-                )
-                ledger_entry_debit = Ledger(
-                    transaction=tnx,
-                    customer=Customer.objects.get(pk=customer_pk),
-                    account=debit_account,
-                    amount=loan_size
-                )
-                ledger_entry_credit = Ledger(
-                    transaction=tnx,
-                    customer=Customer.objects.get(pk=customer_pk),
-                    account=credit_account,
-                    amount=-loan_size
-                )
+                loan_application.save()
                 
-                with transaction.atomic():
-                    tnx.save()
-                    credit_account.save()
-                    ledger_entry_debit.save()
-                    ledger_entry_credit.save()
-                    loan_application.save()
-                
+
+                response = redirect(f'/employee/customers/{customer_pk}/loan_applications')
+                response['HX-Refresh'] = 'true'
+                return response
             except:
+                return HttpResponse('Internal Server Error')   
+        elif status == 'approved':
+             try:
+                 loan_application.status = request.PATCH['status']   
+                 loan_size = loan_application.amount 
+
+                 tnx = Transaction()
+
+                 debit_account = Account.objects.get(pk=loan_application.account.pk)
+
+                 credit_account = Account(
+                     customer=Customer.objects.get(pk=customer_pk),
+                     account_type=Account_type.objects.get(name='Loan'),
+                     name=f'{debit_account.name}_loan',
+                    
+                 )
+                 ledger_entry_debit = Ledger(
+                     transaction=tnx,
+                     customer=Customer.objects.get(pk=customer_pk),
+                     account=debit_account,
+                     amount=loan_size
+                 )
+                 ledger_entry_credit = Ledger(
+                     transaction=tnx,
+                     customer=Customer.objects.get(pk=customer_pk),
+                     account=credit_account,
+                     amount=-loan_size
+                 )
+                
+                 with transaction.atomic():
+                     tnx.save()
+                     credit_account.save()
+                     ledger_entry_debit.save()
+                     ledger_entry_credit.save()
+                     loan_application.save()
+             except:
                 return HttpResponse('Internal Server Error')
         else:
             return HttpResponse('Invalid Status')
         
-        loan_application.save()
+    loan_application.save()
     
     response = redirect(f'/employee/customers/{customer_pk}/loan_applications')
     response['HX-Refresh'] = 'true'
