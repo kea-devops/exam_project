@@ -18,8 +18,8 @@ class LoanApplication(models.Model):
       account = models.ForeignKey(Account, on_delete=models.PROTECT)
       STATUS_CHOICES = (
           ('pending', 'Pending Loan'),
+          ('approved_employee', 'Pending Supervisor Approval'),
           ('approved', 'Approved Loan'),
-          ('approved_employee', 'Approved by Employee'),
           ('denied', 'Denied Loan'),
       )
 

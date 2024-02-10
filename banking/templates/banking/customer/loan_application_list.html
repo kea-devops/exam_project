@@ -3,11 +3,17 @@
 {% block main %}
 
     <h1>Loan Applications
-        <span
-            onclick="document.querySelector('dialog').showModal()"
-            style="cursor: pointer;"
-        >+</span>
+        {% if customer.rank.score >= 25 %}
+            <span
+                onclick="document.querySelector('dialog').showModal()"
+                style="cursor: pointer;"
+            >+</span>
+        {% endif %}
     </h1>
+    
+    {% if 25 > customer.rank.score %}
+        <p><b>You are not eligible to apply for a loan</b></p>
+    {% endif %}
 
     <a href="javascript:history.back()">⬅️Back</a>
 

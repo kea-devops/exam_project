@@ -1,10 +1,10 @@
 from django.core.management.base import BaseCommand
+from banking.models.customer_rank import Customer_rank
 
 class Command(BaseCommand):
     def handle(self, **options):
-        from django.contrib.auth.models import User, Group
+        from django.contrib.auth.models import User
         from django.contrib.auth.hashers import make_password
-        from banking.models.costumer_rank import Customer_rank
         from banking.models.account_type import Account_type
         from decimal import Decimal
         
@@ -18,9 +18,9 @@ class Command(BaseCommand):
 
         # Create customers ranks if table is empty
         if not Customer_rank.objects.all():
-            Customer_rank.objects.create(name='Blue')
-            Customer_rank.objects.create(name='Silver')
-            Customer_rank.objects.create(name='Gold')
+            Customer_rank.objects.create(name='Blue', score=1)
+            Customer_rank.objects.create(name='Silver', score=25)
+            Customer_rank.objects.create(name='Gold', score=75)
 
         # Create account types if table is empty
         if not Account_type.objects.all():

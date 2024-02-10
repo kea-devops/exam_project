@@ -57,10 +57,10 @@ def loan_application_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     loan_applications = LoanApplication.objects.filter(customer=customer)
 
-    if customer.customer_rank.name not in ['Gold', 'Silver']:
-        return HttpResponse('Only gold and silver ranked customers can apply for loans.')
-
     if request.method == 'POST':
+       if customer.rank.score < 25:
+           # return 403
+           return HttpResponse('You do not qualify for a loan.', status=403)
        loan_form = LoanApplicationForm(customer, request.POST)
        if loan_form.is_valid():
            loan_application = loan_form.save(commit=False)

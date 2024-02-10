@@ -8,7 +8,7 @@ class CustomerForm(ModelForm):
     last_name = CharField(max_length=50, required=True)
     email = EmailField(max_length=100, required=True)
     phone = CharField(max_length=20, required=True)
-    customer_rank = ChoiceField(choices=(
+    rank = ChoiceField(choices=(
         ('Blue', 'Blue'),
         ('Silver', 'Silver'),
         ('Gold', 'Gold')
@@ -43,4 +43,4 @@ class CustomerForm(ModelForm):
         if exclude_password_rank:
             del self.fields['password']
             del self.fields['re_password']
-            del self.fields['customer_rank']
+            del self.fields['rank']

@@ -1,13 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
+from .customer_rank import Customer_rank
 
 class Customer(models.Model):
-    class CustomerRank(models.TextChoices):
-        BLUE = 'BLUE', _('Blue')
-        SILVER = 'SILVER', _('Silver')
-        GOLD = 'GOLD', _('Gold')
-    user_id = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    rank = models.ForeignKey(Customer_rank, on_delete=models.PROTECT)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.CharField(max_length=100)

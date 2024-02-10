@@ -38,7 +38,7 @@
                     <td>{{ customer.user.last_name }}</td>
                     <td>{{ customer.user.first_name }}</td>
                     <td>{{ customer.user.email }}</td>
-                    <td>{{ customer.customer_rank.name }}</td>
+                    <td>{{ customer.rank.name }}</td>
                     <td><a href="{% url 'banking:employee/customer' customer.pk %}">Details</a></td>
                     <td><a href="{% url 'banking:employee/accounts' customer.pk %}">Accounts</a></td>
                     <td><a href="{% url 'banking:employee/loan_applications' customer.pk %}">Loan Applications ({{ customer.pending_loan_applications }})</a></td>

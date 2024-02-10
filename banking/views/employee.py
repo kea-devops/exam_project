@@ -9,7 +9,7 @@ from banking.models.customer import Customer
 from banking.forms.new_account import AccountForm
 from banking.forms.new_customer import CustomerForm
 from banking.models.account_type import Account_type
-from banking.models.costumer_rank import Customer_rank
+from banking.models.customer_rank import Customer_rank
 from banking.models.ledger import Transaction, Ledger, generate_balance, append_counterpart
 from banking.models.account import Account, LoanApplication
 
@@ -41,7 +41,7 @@ def customer_list(request):
 
             user.save()
             customer_form.instance.user = user
-            customer_form.instance.customer_rank = Customer_rank.objects.get(name=request.POST['customer_rank'])
+            customer_form.instance.rank = Customer_rank.objects.get(name=request.POST['rank'])
             customer_form.save()   
     
     customer_count = Customer.objects.all().count()
@@ -49,7 +49,7 @@ def customer_list(request):
     if page > page_count:
         page = page_count
 
-    customers = Customer.objects.all().prefetch_related('loan_applications').select_related('user', 'customer_rank')[(page)*10:(page)*10+10]
+    customers = Customer.objects.all().prefetch_related('loan_applications').select_related('user', 'rank')[(page)*10:(page)*10+10]
     for customer in customers:
         customer.pending_loan_applications = customer.loan_applications.filter(status='pending').count
 
@@ -64,7 +64,7 @@ def customer_details(request, pk):
     if request.method == 'PATCH':
         rank = request.PATCH['rank']
         rank = get_object_or_404(Customer_rank, name=rank)
-        customer.customer_rank = rank
+        customer.rank = rank
         customer.save()
         return HttpResponse(f'Customer Rank: {rank.name}')
 

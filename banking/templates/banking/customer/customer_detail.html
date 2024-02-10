@@ -12,7 +12,7 @@
     <br>
     <p2>Phone: <b>{{ customer.phone }}</b></p2>
     <br>
-    <p2>Customer Rank: {{ customer.customer_rank.name }}</p2>
+    <p2>Customer Rank: {{ customer.rank.name }}</p2>
     <br>
     <a href="{% url 'banking:customer/accounts' customer.pk %}">Accounts</a>
     <br>
