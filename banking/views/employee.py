@@ -135,81 +135,72 @@ def loan_application_list(request, customer_pk):
 
 @login_required
 def loan_application_details(request, customer_pk, application_pk):
-    if request.method == 'PATCH':
-        loan_application = get_object_or_404(LoanApplication, pk=application_pk)
-        status = request.PATCH['status']
-        if status == 'denied':
+    user = request.user
+
+    if request.method != 'PATCH':
+        return HttpResponse('Method Not Allowed', status=405)
+
+    loan_application = get_object_or_404(LoanApplication, pk=application_pk)
+    status = request.PATCH['status']
+    if status == 'denied':
+        loan_application.status = request.PATCH['status']
+    
+    elif status == 'pre_approved':
+        if user.is_superuser: # supervisors cannot pre-approve loans
+            return HttpResponse('Forbidden', status=403)
+        try:
             loan_application.status = request.PATCH['status']
-            loan_application.supervisor_approved = False            
+            loan_application.save()
+
+            response = redirect(f'/employee/customers/{customer_pk}/loan_applications')
+            response['HX-Refresh'] = 'true'
+            return response
+        except:
+            return HttpResponse('Internal Server Error')   
+    elif status == 'approved':
+        if not user.is_superuser: # only supervisors can give final approval for loans
+            return HttpResponse('Forbidden', status=403)
+
+        try:
+            loan_application.status = request.PATCH['status']   
+            loan_size = loan_application.amount 
+
+            tnx = Transaction()
+
+            debit_account = Account.objects.get(pk=loan_application.account.pk)
+
+            credit_account = Account(
+                customer=Customer.objects.get(pk=customer_pk),
+                account_type=Account_type.objects.get(name='Loan'),
+                name=f'{debit_account.name}_loan',
+            )
+
+            ledger_entry_debit = Ledger(
+                transaction=tnx,
+                account=debit_account,
+                amount=loan_size,
+                counterparty='',
+                type=TRANSACTION_TYPES[0][0]
+            )
+            ledger_entry_credit = Ledger(
+                transaction=tnx,
+                account=credit_account,
+                amount=-loan_size,
+                counterparty='',
+                type=TRANSACTION_TYPES[0][0]
+            )
         
-        elif status == 'approved_employee':
-            try:
-                loan_application.status = request.PATCH['status']
+            with transaction.atomic():
+                tnx.save()
+                credit_account.save()
+                ledger_entry_debit.save()
+                ledger_entry_credit.save()
                 loan_application.save()
-                
-
-                response = redirect(f'/employee/customers/{customer_pk}/loan_applications')
-                response['HX-Refresh'] = 'true'
-                return response
-            except:
-                return HttpResponse('Internal Server Error')   
-        elif status == 'approved':
-            try:
-                loan_application.status = request.PATCH['status']   
-                loan_size = loan_application.amount 
-
-                tnx = Transaction()
-
-                debit_account = Account.objects.get(pk=loan_application.account.pk)
-
-                credit_account = Account(
-                    customer=Customer.objects.get(pk=customer_pk),
-                    account_type=Account_type.objects.get(name='Loan'),
-                    name=f'{debit_account.name}_loan',
-                
-                )
-                # transaction
-                # account
-                # amount
-                # counterparty
-                # type = (
-                #     ('loan_deposit', 'Loan Deposit'),
-                #     ('internal_transfer', 'Internal Transfer'),
-                #     ('external_transfer', 'External Transfer'),
-                #     ('deposit', 'Deposit'),
-                #     ('withdrawal', 'Withdrawal'),
-                #     ('payment', 'Payment'),
-                #     ('fee', 'Fee'),
-                #     ('interest', 'Interest'),
-                # )
-                # created_at
-
-                ledger_entry_debit = Ledger(
-                    transaction=tnx,
-                    account=debit_account,
-                    amount=loan_size,
-                    counterparty='',
-                    type=TRANSACTION_TYPES[0][0]
-                )
-                ledger_entry_credit = Ledger(
-                    transaction=tnx,
-                    account=credit_account,
-                    amount=-loan_size,
-                    counterparty='',
-                    type=TRANSACTION_TYPES[0][0]
-                )
-            
-                with transaction.atomic():
-                    tnx.save()
-                    credit_account.save()
-                    ledger_entry_debit.save()
-                    ledger_entry_credit.save()
-                    loan_application.save()
-            except:
-                return HttpResponse('Internal Server Error')
-        else:
-            return HttpResponse('Invalid Status')
-        
+        except:
+            return HttpResponse('Internal Server Error')
+    else:
+        return HttpResponse('Invalid Status', status=400)
+    
     loan_application.save()
     
     response = redirect(f'/employee/customers/{customer_pk}/loan_applications')

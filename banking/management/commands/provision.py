@@ -9,12 +9,19 @@ class Command(BaseCommand):
         from decimal import Decimal
         
         # Create admin if not exists and give staff and superuser permissions
-        admin, created = User.objects.get_or_create(username='admin')
-        if created:
+        admin, admin_created = User.objects.get_or_create(username='admin')
+        if admin_created:
             admin.is_staff = True
-            admin.is_superuser = True
+            admin.is_superuser = False
             admin.password = make_password('123456')
             admin.save()
+
+        supervisor, supervisor_created = User.objects.get_or_create(username='supervisor')
+        if supervisor_created:
+            supervisor.is_staff = True
+            supervisor.is_superuser = True
+            supervisor.password = make_password('123456')
+            supervisor.save()
 
         # Create customers ranks if table is empty
         if not Customer_rank.objects.all():

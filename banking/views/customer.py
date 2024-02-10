@@ -59,7 +59,7 @@ def account_details(request, customer_pk, account_pk):
 @login_required
 def loan_application_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    loan_applications = LoanApplication.objects.filter(customer=customer)
+    loan_applications = LoanApplication.objects.filter(customer=customer).order_by('-updated_at')
 
     if request.method == 'POST':
        if customer.rank.score < 25:
@@ -81,7 +81,8 @@ def loan_application_list(request, pk):
 @login_required
 def loans_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    loans = get_balances(Account.objects.filter(account_type__name='Loan', customer=pk))
+    loans = get_balances(Account.objects.filter(account_type__name='Loan', customer=pk).order_by('-created_at'))
+    
     print("Loans = ", loans)
     context = { 'customer': customer, 'loans': loans }
     return render(request, 'banking/customer/loan_list.html', context)

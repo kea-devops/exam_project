@@ -14,56 +14,49 @@
                 <th>Amount ($)</th>
                 <th>Debit Account</th>
                 <th>Status</th>
-                {% if request.user.username == 'admin' or username == 'supervisor' %}
-                    <th colspan="2">Actions</th>
-                {% endif %}
+                <th colspan="2">Actions</th>
             </tr>
         </thead>
-        {% if request.user.username == 'admin' %}
         <tbody>
             {% for application in loan_applications %}
-
-                <tr>
-                    <td>{{ application.amount }}</td>
-                    <td>{{ application.account }}</td>
-                    <td class="status">{{ application.status }}</td>
-
-                    {% if application.status == 'pending' %}
-                        {% if request.user.username == 'admin' %}
-                            <td>
-                                <form hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}" hx-target="body">
-                                    <input type="hidden" name="status" value="approved_employee">
-                                    <button type="submit">Approve (Admin)</button>
-                                </form>
-                            </td>
-                        {% endif %}
-                    {% endif %}
-              {% endfor %}
-        </tbody>
-        {% endif %}
-
-
-         {% if request.user.username == 'supervisor' %}
-        <tbody>
-            {% for application in loan_applications %}
-                {% if application.status == 'approved_employee' %}
-
-                <tr>
-                    <td>{{ application.amount }}</td>
-                    <td>{{ application.account }}</td>
-                    <td class="status">{{ application.status }}</td>
-
-                            <td>
-                                <form hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}" hx-target="body">
-                                    <input type="hidden" name="status" value="approved">
-                                    <button type="submit">Approve (Supervisor)</button>
-                                </form>
-                            </td>
-                    {% endif %}
-                </tr>
+                {% if application.status == 'pending' or application.status == 'pre_approved' %}
+                    <tr>
+                        <td>{{ application.amount }}</td>
+                        <td>{{ application.account }}</td>
+                        <td class="status">{{ application.get_status_display }}</td>
+                        
+                        <td colspan="2">
+                            <!-- If user is not superuser (but still staff) they can approve pending applications -->
+                            {% if not request.user.is_superuser and application.status == 'pending' %}
+                                <div style="display: flex">
+                                    <form hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}" hx-target="body">
+                                        <input type="hidden" name="status" value="pre_approved">
+                                        <button type="submit" style="width: fit-content; text-wrap: nowrap; background-color: darkgreen;">Pre-Approve</button>
+                                    </form>
+                                    <form hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}" hx-target="body">
+                                        <input type="hidden" name="status" value="denied">
+                                        <button type="submit" style="background-color: darkred;">Deny</button>
+                                    </form>
+                                </div>
+                            
+                            <!-- If user is superuser they can approve/deny pre-approved applications -->
+                            {% elif request.user.is_superuser and application.status == 'pre_approved' %}
+                                <div style="display: flex">
+                                    <form hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}" hx-target="body">
+                                        <input type="hidden" name="status" value="approved">
+                                        <button type="submit" style="background-color: darkgreen;">Approve</button>
+                                    </form>
+                                    <form hx-patch="{% url 'banking:employee/loan_application' customer.pk application.pk %}" hx-target="body">
+                                        <input type="hidden" name="status" value="denied">
+                                        <button type="submit" style="background-color: darkred;">Deny</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}    
             {% endfor %}
         </tbody>
-        {% endif %}
 
     </table>
 
@@ -84,7 +77,7 @@
         </thead>
         <tbody>
             {% for application in loan_applications %}
-                {% if application.status != 'pending' %}
+                {% if application.status == 'approved' or application.status == 'denied' %}
                     <tr>
                         <td>{{ application.amount }}</td>
                         <td>{{ application.account }}</td>

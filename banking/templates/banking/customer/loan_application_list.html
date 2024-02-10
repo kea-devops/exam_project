@@ -34,20 +34,22 @@
     
     <table>
         <thead>
-               <tr>
-                   <th>Account ($)</th>
-                   <th>Amount</th>
-                   <th>Status</th>
-               </tr>
+            <tr>
+                <th>Account ($)</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Last Updated</th>
+            </tr>
         </thead>
         <tbody>
-           {% for loan_application in loan_applications %}
-               <tr>
-                   <td>{{ loan_application.account.name }}</td>
-                   <td>{{ loan_application.amount }}</td>
-                   <td>{{ loan_application.status }}</td>
-               </tr>
-           {% endfor %}
+            {% for loan_application in loan_applications %}
+                <tr>
+                    <td>{{ loan_application.account.name }}</td>
+                    <td>{{ loan_application.amount }}</td>
+                    <td>{{ loan_application.status }}</td>
+                    <td>{{ loan_application.updated_at|date:'Y-m-d H:i'}}</td>
+                </tr>
+            {% endfor %}
         </tbody>    
     </table>
 
