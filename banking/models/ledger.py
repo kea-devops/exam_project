@@ -23,12 +23,14 @@ class Ledger(models.Model):
     type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-def generate_balance(accounts):
+def get_balance(account):
+    balance = Ledger.objects.filter(account=account).aggregate(Sum('amount'))['amount__sum']
+    if balance is None:
+        balance = 0
+    return balance
+
+def get_balances(accounts):
     for account in accounts:
-        balance = Ledger.objects.filter(account=account).aggregate(Sum('amount'))['amount__sum']
-        if balance is None:
-            account.balance = 0
-        else:
-            account.balance = balance
-        account.balance = '{0:.2f}'.format(account.balance)
+        balance = get_balance(account)
+        account.balance = '{0:.2f}'.format(balance)
     return accounts

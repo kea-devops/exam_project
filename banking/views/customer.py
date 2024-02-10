@@ -5,10 +5,10 @@ from django.db.models import Q, Sum
 from django.conf import settings
 from banking.models.account import Account
 from banking.models.customer import Customer
-from banking.models.ledger import Transaction
 from banking.forms.new_account import AccountForm
 from banking.forms.new_customer import CustomerForm
-from banking.models.ledger import Ledger, generate_balance
+from banking.forms.new_transaction import TransactionForm, TransactionError
+from banking.models.ledger import Ledger, get_balances
 from banking.models.loan_application import LoanApplication
 from banking.forms.new_loan_application import LoanApplicationForm
 
@@ -25,22 +25,23 @@ def detail(request, pk):
        form = CustomerForm(request.PATCH, instance=customer, exclude_password_rank=True)
        if form.is_valid():
           customer = form.save()       
-    else:
-       form = CustomerForm(instance=customer, exclude_password_rank=True)
-    context = {'customer': customer, 'customer_form': form}
+    
+    customer_form = CustomerForm(instance=customer, exclude_password_rank=True)
+    transaction_form = TransactionForm(customer)
+    context = {'customer': customer, 'customer_form': customer_form, 'transaction_form': transaction_form}
     return render(request, 'banking/customer/customer_detail.html', context)
     
 @login_required
 def account_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    accounts = generate_balance(Account.objects.filter(~Q(account_type__name='Loan'), customer=pk))
+    accounts = get_balances(Account.objects.filter(~Q(account_type__name='Loan'), customer=pk))
     context = {'customer': customer, 'accounts': accounts}
     return render(request, 'banking/customer/account_list.html', context)
 
 @login_required
 def account_details(request, customer_pk, account_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
-    account = generate_balance([get_object_or_404(Account, pk=account_pk)])[0]
+    account = get_balances([get_object_or_404(Account, pk=account_pk)])[0]
     movements = Ledger.objects.filter(account=account).order_by('-created_at')
     bank_reg = getattr(settings, 'BANK_REG_NUM', None)
 
@@ -80,7 +81,7 @@ def loan_application_list(request, pk):
 @login_required
 def loans_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    loans = generate_balance(Account.objects.filter(account_type__name='Loan', customer=pk))
+    loans = get_balances(Account.objects.filter(account_type__name='Loan', customer=pk))
     print("Loans = ", loans)
     context = { 'customer': customer, 'loans': loans }
     return render(request, 'banking/customer/loan_list.html', context)
@@ -103,13 +104,17 @@ def account_movements(request, account_id):
     return render(request, 'banking/customer/account_movements.html', context)
 
 @login_required
-def transaction_details(request, customer_id, transaction_id):
-    customer = get_object_or_404(Customer, pk=customer_id, user=request.user)
-    transaction = get_object_or_404(Transaction, pk=transaction_id)
-    ledgers = Ledger.objects.filter(transaction=transaction, customer=customer).order_by('-created_at')
-
-    context = {
-        'transaction': transaction,
-        'ledgers': ledgers,
-    }
-    return render(request, 'banking/customer/transaction_details.html', context)
+def transaction_list(request, customer_pk):
+    if request.method != 'POST':
+        return HttpResponse('Method not allowed', status=405)
+    
+    user = request.user
+    customer = get_object_or_404(Customer, pk=customer_pk)
+    transaction = TransactionForm(customer, request.POST)
+    if transaction.is_valid():
+        try:
+            account_pk = transaction.process(user)
+        except TransactionError as e:
+            return HttpResponse(str(e.message), status=e.status_code)
+    
+    return redirect('banking:customer/account', customer_pk=customer_pk, account_pk=account_pk)

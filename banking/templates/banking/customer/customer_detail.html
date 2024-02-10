@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
 {% block main %}
     <h1>Customer Dashboard</h1>
+    
+    <a href="{% url 'banking:customer/accounts' customer.pk %}">Accounts</a>
+    |
+    <a href="{% url 'banking:customer/loans' customer.pk %}">Loans</a>
+    |
+    <a href="{% url 'banking:customer/loan_applications' customer.pk %}">Loan Applications</a>
+    |
+    <a onclick="document.getElementById('new_transaction').showModal()" style="cursor: pointer;">Send Money</a>
+    <hr>
 
     <h2>Hello {{ customer.user.first_name }} {{ customer.user.last_name }}</h2>
 
-    <p2>First Name: <b>{{ customer.first_name }}</b></p2>
+    <p>First Name: <b>{{ customer.first_name }}</b></p>
+    <p>Last Name: <b>{{ customer.last_name }}</b></p>
+    <p>Email: <b>{{ customer.email }}</b></p>
+    <p>Phone: <b>{{ customer.phone }}</b></p>
+    <p>Customer Rank: <b>{{ customer.rank.name }}</b></p>
     <br>
-    <p2>Last Name: <b>{{ customer.last_name }}</b></p2>
-    <br>
-    <p2>Email: <b>{{ customer.email }}</b></p2>
-    <br>
-    <p2>Phone: <b>{{ customer.phone }}</b></p2>
-    <br>
-    <p2>Customer Rank: {{ customer.rank.name }}</p2>
-    <br>
-    <a href="{% url 'banking:customer/accounts' customer.pk %}">Accounts</a>
-    <br>
-    <a href="{% url 'banking:customer/loan_applications' customer.pk %}">Loan Applications</a>
-    <br>
-    <a href="{% url 'banking:customer/loans' customer.pk %}">Loans</a>
-    <h3>Change Customer Information <span onclick="document.querySelector('dialog').showModal()" style="cursor: pointer;">+</span></h3>
+    <a onclick="document.getElementById('edit_info').showModal()" style="cursor: pointer;">Edit</a>
 
-    <dialog>
+    <dialog id="edit_info">
         <header>Change Customer Information</header>
         <form hx-target="body" hx-patch="{% url 'banking:customer/detail' pk=customer.pk %}">
             {% csrf_token %}
@@ -29,7 +29,28 @@
             <br>
             <menu>
                 <button>Submit</button>
-                <span style="cursor: pointer;" onclick="document.querySelector('dialog').close()">Cancel</span>
+                <span style="cursor: pointer;" onclick="document.getElementById('edit_info').close()">Cancel</span>
+            </menu>
+        </form>
+    </dialog>
+
+    <dialog id="new_transaction">
+        <header>Send Money</header>
+        <form 
+            hx-post="{% url 'banking:customer/transaction_details' customer_pk=customer.pk %}"
+            hx-ext="response-targets"
+            hx-target-5*="#transaction_error"
+            hx-target-4*="#transaction_error"
+            hx-target="body"
+            hx-swap="innerHTML"
+        >
+            {% csrf_token %}
+            {{ transaction_form.as_p }}
+            <p id="transaction_error" style="color: red"></p>
+            <br>
+            <menu>
+                <button>Send Money</button>
+                <span style="cursor: pointer;" onclick="document.getElementById('new_transaction').close()">Cancel</span>
             </menu>
         </form>
     </dialog>

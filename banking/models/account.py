@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from banking.models.customer import Customer
 from banking.models.account_type import Account_type
 
@@ -10,6 +11,10 @@ class Account(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def account_reg_num(self):
+        return getattr(settings, 'BANK_REG_NUM', None) + ' ' + self.account_num
+
+
     def __str__(self):
-        return self.name    
+        return self.name
     

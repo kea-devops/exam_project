@@ -15,7 +15,7 @@ from banking.forms.new_customer import CustomerForm
 from banking.models.account_type import Account_type
 from banking.models.customer_rank import Customer_rank
 from banking.models.loan_application import LoanApplication
-from banking.models.ledger import Transaction, Ledger, generate_balance, TRANSACTION_TYPES
+from banking.models.ledger import Transaction, Ledger, get_balances, TRANSACTION_TYPES
 
 @login_required
 def index(_):
@@ -74,8 +74,8 @@ def customer_details(request, pk):
 
     ranks = Customer_rank.objects.all()
     accounts = Account.objects.filter(customer=customer)
-    loans = generate_balance(accounts.filter(account_type__name='Loan'))
-    accounts = generate_balance(accounts.filter(~Q(account_type__name='Loan')))
+    loans = get_balances(accounts.filter(account_type__name='Loan'))
+    accounts = get_balances(accounts.filter(~Q(account_type__name='Loan')))
 
     context = { 'customer': customer, 'accounts': accounts, 'loans': loans, 'ranks': ranks }
 
@@ -96,7 +96,7 @@ def account_list(request, customer_pk):
 
     customer = get_object_or_404(Customer, pk=customer_pk)
     accounts = Account.objects.filter(~Q(account_type__name='Loan'), customer=customer_pk)
-    accounts = generate_balance(accounts)
+    accounts = get_balances(accounts)
 
     context = { 
         'customer': customer, 
@@ -109,7 +109,7 @@ def account_list(request, customer_pk):
 @login_required
 def account_details(request, customer_pk, account_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
-    account = generate_balance([get_object_or_404(Account, pk=account_pk)])[0]
+    account = get_balances([get_object_or_404(Account, pk=account_pk)])[0]
     movements = Ledger.objects.filter(account=account).order_by('-created_at')
     bank_reg = getattr(settings, 'BANK_REG_NUM', None)
     
@@ -120,7 +120,7 @@ def account_details(request, customer_pk, account_pk):
 def loan_list(request, customer_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
     loans = Account.objects.filter(account_type__name='Loan', customer=customer_pk)
-    loans = generate_balance(loans)
+    loans = get_balances(loans)
 
     context = { 'customer': customer, 'loans': loans }
     return render(request, 'banking/employee/loan_list.html', context)
