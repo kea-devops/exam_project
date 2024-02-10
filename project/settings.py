@@ -127,3 +127,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BANK_REG_NUM = os.getenv('BANK_REG_NUM')

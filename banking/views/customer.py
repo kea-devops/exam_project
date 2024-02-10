@@ -1,15 +1,16 @@
-from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required
-from banking.forms.new_loan_application import LoanApplicationForm
-from banking.forms.new_customer import CustomerForm
-from banking.models.account import Account, LoanApplication
-from banking.models.ledger import Ledger, generate_balance
-from banking.models.account_type import Account_type
-from banking.forms.new_account import AccountForm
+from django.http import HttpResponse
+from django.db.models import Q, Sum
+from django.conf import settings
+from banking.models.account import Account
 from banking.models.customer import Customer
 from banking.models.ledger import Transaction
+from banking.forms.new_account import AccountForm
+from banking.forms.new_customer import CustomerForm
+from banking.models.ledger import Ledger, generate_balance
+from banking.models.loan_application import LoanApplication
+from banking.forms.new_loan_application import LoanApplicationForm
 
 @login_required
 def index(request):
@@ -40,6 +41,8 @@ def account_list(request, pk):
 def account_details(request, customer_pk, account_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
     account = generate_balance([get_object_or_404(Account, pk=account_pk)])[0]
+    movements = Ledger.objects.filter(account=account).order_by('-created_at')
+    bank_reg = getattr(settings, 'BANK_REG_NUM', None)
 
     if request.method == 'PATCH':
        form = AccountForm(request.PATCH, instance=account, exclude_type=True)
@@ -49,7 +52,7 @@ def account_details(request, customer_pk, account_pk):
     else:
        form = AccountForm(instance=account, exclude_type=True)
     
-    context = {'customer': customer, 'account': account, 'form': form}
+    context = {'customer': customer, 'account': account, 'form': form, 'movements': movements, 'bank_reg': bank_reg}
     return render(request, 'banking/customer/account_details.html', context)
 
 @login_required
@@ -64,8 +67,7 @@ def loan_application_list(request, pk):
        loan_form = LoanApplicationForm(customer, request.POST)
        if loan_form.is_valid():
            loan_application = loan_form.save(commit=False)
-           account_name = request.POST.get('account')
-           account = Account.objects.get(name=account_name)
+           account = Account.objects.get(pk=request.POST.get('account'))
            loan_application.account = account
            loan_application.customer = customer
            loan_application.save()

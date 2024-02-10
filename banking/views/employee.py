@@ -1,17 +1,21 @@
+import random
+
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.conf import settings
 from django.db.models import Q
 
+from banking.models.account import Account
 from banking.models.customer import Customer
 from banking.forms.new_account import AccountForm
 from banking.forms.new_customer import CustomerForm
 from banking.models.account_type import Account_type
 from banking.models.customer_rank import Customer_rank
-from banking.models.ledger import Transaction, Ledger, generate_balance, append_counterpart
-from banking.models.account import Account, LoanApplication
+from banking.models.loan_application import LoanApplication
+from banking.models.ledger import Transaction, Ledger, generate_balance, TRANSACTION_TYPES
 
 @login_required
 def index(_):
@@ -87,6 +91,7 @@ def account_list(request, customer_pk):
             account_type = get_object_or_404(Account_type, name=request.POST['account_type'])
             account_form.instance.customer = get_object_or_404(Customer, pk=customer_pk)
             account_form.instance.account_type = account_type
+            account_form.instance.account_num = random.randint(1000000000, 9999999999)
             account_form.save()   
 
     customer = get_object_or_404(Customer, pk=customer_pk)
@@ -105,9 +110,10 @@ def account_list(request, customer_pk):
 def account_details(request, customer_pk, account_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
     account = generate_balance([get_object_or_404(Account, pk=account_pk)])[0]
-    movements = append_counterpart(Ledger.objects.filter(account=account_pk).order_by('-created_at'))
+    movements = Ledger.objects.filter(account=account).order_by('-created_at')
+    bank_reg = getattr(settings, 'BANK_REG_NUM', None)
     
-    context = { 'customer': customer, 'account': account, 'movements': movements }
+    context = { 'customer': customer, 'account': account, 'movements': movements, 'bank_reg': bank_reg}
     return render(request, 'banking/employee/account_details.html', context)
 
 @login_required
@@ -148,40 +154,58 @@ def loan_application_details(request, customer_pk, application_pk):
             except:
                 return HttpResponse('Internal Server Error')   
         elif status == 'approved':
-             try:
-                 loan_application.status = request.PATCH['status']   
-                 loan_size = loan_application.amount 
+            try:
+                loan_application.status = request.PATCH['status']   
+                loan_size = loan_application.amount 
 
-                 tnx = Transaction()
+                tnx = Transaction()
 
-                 debit_account = Account.objects.get(pk=loan_application.account.pk)
+                debit_account = Account.objects.get(pk=loan_application.account.pk)
 
-                 credit_account = Account(
-                     customer=Customer.objects.get(pk=customer_pk),
-                     account_type=Account_type.objects.get(name='Loan'),
-                     name=f'{debit_account.name}_loan',
-                    
-                 )
-                 ledger_entry_debit = Ledger(
-                     transaction=tnx,
-                     customer=Customer.objects.get(pk=customer_pk),
-                     account=debit_account,
-                     amount=loan_size
-                 )
-                 ledger_entry_credit = Ledger(
-                     transaction=tnx,
-                     customer=Customer.objects.get(pk=customer_pk),
-                     account=credit_account,
-                     amount=-loan_size
-                 )
+                credit_account = Account(
+                    customer=Customer.objects.get(pk=customer_pk),
+                    account_type=Account_type.objects.get(name='Loan'),
+                    name=f'{debit_account.name}_loan',
                 
-                 with transaction.atomic():
-                     tnx.save()
-                     credit_account.save()
-                     ledger_entry_debit.save()
-                     ledger_entry_credit.save()
-                     loan_application.save()
-             except:
+                )
+                # transaction
+                # account
+                # amount
+                # counterparty
+                # type = (
+                #     ('loan_deposit', 'Loan Deposit'),
+                #     ('internal_transfer', 'Internal Transfer'),
+                #     ('external_transfer', 'External Transfer'),
+                #     ('deposit', 'Deposit'),
+                #     ('withdrawal', 'Withdrawal'),
+                #     ('payment', 'Payment'),
+                #     ('fee', 'Fee'),
+                #     ('interest', 'Interest'),
+                # )
+                # created_at
+
+                ledger_entry_debit = Ledger(
+                    transaction=tnx,
+                    account=debit_account,
+                    amount=loan_size,
+                    counterparty='',
+                    type=TRANSACTION_TYPES[0][0]
+                )
+                ledger_entry_credit = Ledger(
+                    transaction=tnx,
+                    account=credit_account,
+                    amount=-loan_size,
+                    counterparty='',
+                    type=TRANSACTION_TYPES[0][0]
+                )
+            
+                with transaction.atomic():
+                    tnx.save()
+                    credit_account.save()
+                    ledger_entry_debit.save()
+                    ledger_entry_credit.save()
+                    loan_application.save()
+            except:
                 return HttpResponse('Internal Server Error')
         else:
             return HttpResponse('Invalid Status')

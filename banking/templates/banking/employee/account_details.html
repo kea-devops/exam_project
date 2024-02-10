@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block main %}
-    <h1>{{ account.name }}</h1>
+    <h1>{{ account.name }} - {{bank_reg}} {{ account.account_num }}</h1>
 
     <a href="javascript:history.back()">⬅️ Back</a>
 
@@ -13,29 +13,20 @@
 
     <h2>Account Movements</h2>
     <table>
-        <thead>
+        <tr>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Sender/Recipient</th>
+            <th>Date</th>
+        </tr>
+        {% for movement in movements %}
             <tr>
-                <th>Date</th>
-                <th>Amount ($)</th>
-                <th colspan="2">in/out</th>
+                <td>{{movement.amount}}</td>
+                <td>{{movement.get_type_display}}</td>
+                <td>{{movement.counterparty}}</td>
+                <td>{{movement.created_at|date:'Y-m-d H:i'}}</td>
             </tr>
-        </thead>
-        <tbody>
-            {% for movement in movements %}
-                <tr>
-                    <td>{{movement.created_at|date:'Y-m-d H:i'}}</td>
-                    <td>{{movement.amount}}</td>
-                    <td>
-                        {% if movement.amount > 0 %}
-                            &#8592;
-                        {% else %}
-                            &#8594;
-                        {% endif %}
-                    </td>
-                    <td>{{movement.counterpart}}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
+        {% endfor %}
     </table>
 
 {% endblock %}
