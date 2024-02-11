@@ -31,6 +31,7 @@ class Command(BaseCommand):
 
         # Create account types if table is empty
         if not Account_type.objects.all():
-            Account_type.objects.create(name='Regular', interest_rate=Decimal(2.10))
-            Account_type.objects.create(name='Savings', interest_rate=Decimal(5.75))
-            Account_type.objects.create(name='Loan', interest_rate=Decimal(12.32))
+            Account_type.objects.create(name='Regular', internal_use=False, interest_rate=Decimal(2.10))
+            Account_type.objects.create(name='Savings', internal_use=False, interest_rate=Decimal(5.75))
+            Account_type.objects.create(name='Loan', internal_use=True, interest_rate=Decimal(12.32))
+            Account_type.objects.create(name='Interbanking', internal_use=True, interest_rate=Decimal(0))

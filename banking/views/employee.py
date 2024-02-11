@@ -89,6 +89,8 @@ def account_list(request, customer_pk):
         account_form = AccountForm(request.POST)
         if account_form.is_valid():
             account_type = get_object_or_404(Account_type, name=request.POST['account_type'])
+            if account_type.internal_use:
+                return HttpResponse('Forbidden', status=403)
             account_form.instance.customer = get_object_or_404(Customer, pk=customer_pk)
             account_form.instance.account_type = account_type
             account_form.instance.account_num = random.randint(1000000000, 9999999999)
