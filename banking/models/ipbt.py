@@ -30,7 +30,7 @@ class IPBT(models.Model):
     # The HTTP hostname url of the target bank
     target_hostname = models.CharField(max_length=255, null=False)
     # The path of the target bank's API to initialize the transaction
-    int_transfer_path = models.CharField(max_length=255, null=False)
+    init_transfer_path = models.CharField(max_length=255, null=False)
     # The path of the target bank's API to confirm the transaction
     pre_confirm_path = models.CharField(max_length=255, null=False)
     # The path of the target bank's API to confirm the transaction
@@ -39,7 +39,7 @@ class IPBT(models.Model):
     cancel_path = models.CharField(max_length=255, null=False)
 
     def init_url(self):
-        return self.target_hostname + self.int_transfer_path
+        return self.target_hostname + self.init_transfer_path
     
     def pre_confirm_url(self):
         return self.target_hostname + self.pre_confirm_path
