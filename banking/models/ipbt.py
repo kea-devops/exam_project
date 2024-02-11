@@ -1,31 +1,20 @@
 from django.db import models
-
-STATUS_CHOICES = (
-    ('pending_out', 'Pending (Outgoing)'),
-    ('pending_in', 'Pending (Incoming)'),
-    ('confirmed_out', 'Confirmed (Outgoing)'),
-    ('confirmed_in', 'Confirmed (Incoming)'),
-    ('failed_out', 'Failed (Outgoing)'),
-    ('failed_in', 'Failed (Incoming)'),
-    ('cancelled_out', 'Cancelled (Outgoing)'),
-    ('cancelled_in', 'Cancelled (Incoming)'),
-    ('completed_out', 'Completed (Outgoing)'),
-    ('completed_in', 'Completed (Incoming)'),
-)
-
-TYPE_CHOICES = (
-    ('transfer_out', 'Transfer (Outgoing)'),
-    ('transfer_in', 'Transfer (Incoming)'),
-)
+from banking.utils.choices import IPBT_STATUS_CHOICES, IPBT_TYPE_CHOICES
 
 # Interplanetary Banking Transactions
 class IPBT(models.Model):
-    account = models.ForeignKey('Account', on_delete=models.PROTECT)
+    transaction = models.ForeignKey('Transaction', null=True, on_delete=models.PROTECT)
+    transaction_target = models.CharField(max_length=255, null=True)
+    internal_account = models.ForeignKey('Account', on_delete=models.PROTECT)
+    external_account = models.CharField(max_length=10, null=False)
+    external_bank_reg = models.CharField(max_length=4, null=False)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, null=False)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, null=False)
+    type = models.CharField(max_length=20, choices=IPBT_TYPE_CHOICES, null=False)
+    status = models.CharField(max_length=20, choices=IPBT_STATUS_CHOICES, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    expires_internally_at = models.DateTimeField(null=True)
+    expires_externally_at = models.DateTimeField(null=True)
 
     # The HTTP hostname url of the target bank
     target_hostname = models.CharField(max_length=255, null=False)

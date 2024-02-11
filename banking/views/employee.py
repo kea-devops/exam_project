@@ -5,17 +5,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.conf import settings
 from django.db.models import Q
 
 from banking.models.account import Account
 from banking.models.customer import Customer
+from banking.utils.constants import BANK_REG_NUM
 from banking.forms.new_account import AccountForm
 from banking.forms.new_customer import CustomerForm
 from banking.models.account_type import Account_type
 from banking.models.customer_rank import Customer_rank
 from banking.models.loan_application import LoanApplication
-from banking.models.ledger import Transaction, Ledger, get_balances, TRANSACTION_TYPES
+from banking.models.ledger import Transaction, Ledger, get_balances
+from banking.utils.choices import TRANSACTION_TYPE_CHOICES
 
 @login_required
 def index(_):
@@ -53,7 +54,7 @@ def customer_list(request):
     if page > page_count:
         page = page_count
 
-    customers = Customer.objects.all().prefetch_related('loan_applications').select_related('user', 'rank')[(page)*10:(page)*10+10]
+    customers = Customer.objects.all().filter(~Q(email='internal_accounts')).prefetch_related('loan_applications').select_related('user', 'rank')[(page)*10:(page)*10+10]
     for customer in customers:
         customer.pending_loan_applications = customer.loan_applications.filter(status='pending').count
 
@@ -64,6 +65,8 @@ def customer_list(request):
 @login_required
 def customer_details(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
+    if customer.email == 'internal_accounts': # internal accounts cannot be viewed or modified
+        return HttpResponse('Not Found', status=404)
 
     if request.method == 'PATCH':
         rank = request.PATCH['rank']
@@ -76,7 +79,7 @@ def customer_details(request, pk):
     accounts = Account.objects.filter(customer=customer)
     loans = get_balances(accounts.filter(account_type__name='Loan'))
     accounts = get_balances(accounts.filter(~Q(account_type__name='Loan')))
-
+    
     context = { 'customer': customer, 'accounts': accounts, 'loans': loans, 'ranks': ranks }
 
     return render(request, 'banking/employee/customer_details.html', context)
@@ -93,7 +96,6 @@ def account_list(request, customer_pk):
                 return HttpResponse('Forbidden', status=403)
             account_form.instance.customer = get_object_or_404(Customer, pk=customer_pk)
             account_form.instance.account_type = account_type
-            account_form.instance.account_num = random.randint(1000000000, 9999999999)
             account_form.save()   
 
     customer = get_object_or_404(Customer, pk=customer_pk)
@@ -113,9 +115,8 @@ def account_details(request, customer_pk, account_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
     account = get_balances([get_object_or_404(Account, pk=account_pk)])[0]
     movements = Ledger.objects.filter(account=account).order_by('-created_at')
-    bank_reg = getattr(settings, 'BANK_REG_NUM', None)
     
-    context = { 'customer': customer, 'account': account, 'movements': movements, 'bank_reg': bank_reg}
+    context = { 'customer': customer, 'account': account, 'movements': movements, 'bank_reg': BANK_REG_NUM}
     return render(request, 'banking/employee/account_details.html', context)
 
 @login_required
@@ -182,14 +183,14 @@ def loan_application_details(request, customer_pk, application_pk):
                 account=debit_account,
                 amount=loan_size,
                 counterparty='',
-                type=TRANSACTION_TYPES[0][0]
+                type=TRANSACTION_TYPE_CHOICES[0][0]
             )
             ledger_entry_credit = Ledger(
                 transaction=tnx,
                 account=credit_account,
                 amount=-loan_size,
                 counterparty='',
-                type=TRANSACTION_TYPES[0][0]
+                type=TRANSACTION_TYPE_CHOICES[0][0]
             )
         
             with transaction.atomic():

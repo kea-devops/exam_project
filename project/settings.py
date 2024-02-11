@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'banking'
+    'banking',
+    'django_rq',
 ]
 
 MIDDLEWARE = [
@@ -131,6 +132,20 @@ LOGOUT_REDIRECT_URL = '/'
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+NO_OVERRIDE = os.getenv('NO_OVERRIDE') # To run second local instance
+if NO_OVERRIDE == 'true':
+    load_dotenv(override=False)
+else: 
+    load_dotenv(override=True)
 
+PORT = os.getenv('PORT')
 BANK_REG_NUM = os.getenv('BANK_REG_NUM')
+REDIS_URL = os.getenv('REDIS_URL')
+IPBR_URL = os.getenv('IPBR_URL')
+
+RQ_QUEUES = {
+    'default': {
+        'URL': REDIS_URL,
+        'DEFAULT_TIMEOUT': 360,
+    },
+}

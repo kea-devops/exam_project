@@ -1,19 +1,10 @@
 from django import forms
-from django.conf import settings
 from banking.models.account import Account
-from banking.models.ledger import Ledger, get_balance, TRANSACTION_TYPES
+from banking.models.ledger import get_balance
+from banking.utils.constants import BANK_REG_NUM
+from banking.utils.errors import TransactionError
 from banking.models.transaction import Transaction
-from django.db import transaction
-
-class TransactionError(Exception):
-    def __init__(self, message, status_code=None):
-        super().__init__()
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
-        else:
-            self.status_code = 500
-    pass
+import banking.utils.handle_transactions as transactions
 
 class TransactionForm(forms.ModelForm):
     account = forms.ModelChoiceField(
@@ -22,12 +13,12 @@ class TransactionForm(forms.ModelForm):
         label='From account',
         widget=forms.Select(attrs={'class': 'form-control'}),
     )
-    recipient_reg_num = forms.CharField(
+    target_reg_num = forms.CharField(
         label='Registration number',
         widget=forms.TextInput(attrs={'class': 'form-control'}),
         max_length=4,
     )
-    recipient_account = forms.CharField(
+    target_account = forms.CharField(
         label='Account number',
         widget=forms.TextInput(attrs={'class': 'form-control'}),
         max_length=10,
@@ -40,8 +31,6 @@ class TransactionForm(forms.ModelForm):
     )
 
     def process(self, user):
-        bank_reg = getattr(settings, 'BANK_REG_NUM', None)
-
         data = self.cleaned_data
         credit_account = data['account']
         amount = data['amount']
@@ -59,54 +48,12 @@ class TransactionForm(forms.ModelForm):
         if balance < data['amount']:
             raise TransactionError('Insufficient funds', status_code=400)
         
-        # Check if the recipient account exists
-        
-        debit_reg = data['recipient_reg_num']
-
-        # Internal transfer
-        if debit_reg == bank_reg:
-            transfer_type = TRANSACTION_TYPES[1][0]
-            try:
-                debit_account = Account.objects.get(
-                    account_num=data['recipient_account'],
-                )
-            except Account.DoesNotExist:
-                raise TransactionError('Recipient account does not exist', status_code=400)
-            debit_counterparty = debit_account.account_reg_num()
-
-        # External transfer
+        target_reg = data['target_reg_num']
+        if target_reg == BANK_REG_NUM:
+            return transactions.internal(data)
         else:
-            # TODO: Handle external transfers
-            transfer_type = TRANSACTION_TYPES[2][0]
-            raise TransactionError('External transfers are not supported', status_code=501)
+            return transactions.external(data)
         
-        tnx = Transaction()
-        ledger_entry_debit = Ledger(
-            transaction=tnx,
-            account=debit_account,
-            amount=amount,
-            counterparty=credit_account.account_reg_num(),
-            type=transfer_type
-        )
-        ledger_entry_credit = Ledger(
-            transaction=tnx,
-            account=credit_account,
-            amount=-amount,
-            counterparty=debit_counterparty,
-            type=transfer_type
-        )
-
-        try:
-            with transaction.atomic():
-                print('Transaction started')
-                tnx.save()
-                ledger_entry_debit.save()
-                ledger_entry_credit.save()
-        except Exception as e:
-            print(e)    
-            raise TransactionError('Transaction failed, please try again later', status_code=500)
-
-        return credit_account.pk
 
     def __init__(self, customer, *args, **kwargs):
           super(TransactionForm, self).__init__(*args, **kwargs)
@@ -114,4 +61,4 @@ class TransactionForm(forms.ModelForm):
 
     class Meta:
         model = Transaction
-        fields = ('account', 'recipient_reg_num', 'recipient_account', 'amount')
+        fields = ('account', 'target_reg_num', 'target_account', 'amount')

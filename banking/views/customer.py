@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.db.models import Q, Sum
-from django.conf import settings
 from banking.models.account import Account
 from banking.models.customer import Customer
+from banking.utils.constants import BANK_REG_NUM
 from banking.forms.new_account import AccountForm
 from banking.forms.new_customer import CustomerForm
 from banking.forms.new_transaction import TransactionForm, TransactionError
@@ -43,7 +43,6 @@ def account_details(request, customer_pk, account_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
     account = get_balances([get_object_or_404(Account, pk=account_pk)])[0]
     movements = Ledger.objects.filter(account=account).order_by('-created_at')
-    bank_reg = getattr(settings, 'BANK_REG_NUM', None)
 
     if request.method == 'PATCH':
        form = AccountForm(request.PATCH, instance=account, exclude_type=True)
@@ -53,7 +52,7 @@ def account_details(request, customer_pk, account_pk):
     else:
        form = AccountForm(instance=account, exclude_type=True)
     
-    context = {'customer': customer, 'account': account, 'form': form, 'movements': movements, 'bank_reg': bank_reg}
+    context = {'customer': customer, 'account': account, 'form': form, 'movements': movements, 'bank_reg': BANK_REG_NUM}
     return render(request, 'banking/customer/account_details.html', context)
 
 @login_required
@@ -83,7 +82,6 @@ def loans_list(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     loans = get_balances(Account.objects.filter(account_type__name='Loan', customer=pk).order_by('-created_at'))
     
-    print("Loans = ", loans)
     context = { 'customer': customer, 'loans': loans }
     return render(request, 'banking/customer/loan_list.html', context)
    
@@ -118,4 +116,5 @@ def transaction_list(request, customer_pk):
         except TransactionError as e:
             return HttpResponse(str(e.message), status=e.status_code)
     
-    return redirect('banking:customer/account', customer_pk=customer_pk, account_pk=account_pk)
+    # return redirect('banking:customer/account', customer_pk=customer_pk, account_pk=account_pk)
+    return HttpResponse('test', status=400)
