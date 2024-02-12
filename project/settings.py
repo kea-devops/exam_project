@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+OVERRIDE = os.getenv('OVERRIDE') # To run second local instance
+load_dotenv(override=OVERRIDE == 'true')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -79,8 +84,14 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE'  : 'django.db.backends.postgresql',
+        'USER'    : os.environ['DB_USER'],
+        'PASSWORD': os.environ['DB_PASSWORD'],
+        'HOST'    : os.environ['DB_HOST'],
+        'NAME'    : os.environ['DB_NAME'],
+        'PORT'    : '5432',
+#       'ENGINE': 'django.db.backends.sqlite3',
+#       'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -119,7 +130,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL  = '/static/'
+STATIC_ROOT = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -128,15 +140,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-
-import os
-from dotenv import load_dotenv
-
-NO_OVERRIDE = os.getenv('NO_OVERRIDE') # To run second local instance
-if NO_OVERRIDE == 'true':
-    load_dotenv(override=False)
-else: 
-    load_dotenv(override=True)
 
 PORT = os.getenv('PORT')
 BANK_REG_NUM = os.getenv('BANK_REG_NUM')
