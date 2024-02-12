@@ -28,4 +28,3 @@ This is a web application for online banking.
 
 4. Run the development server
     - `python manage.py runserver` 
-
