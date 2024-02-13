@@ -33,6 +33,9 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 ENV IPBR_URL="https://ipbr.treeleaf.dev/ipbr"
 ENV REDIS_URL="redis://redis:6379/0"
+ENV DB_HOST="db"
+ENV DB_NAME="db"
+ENV DB_USER="postgres"
 
 # Command to run the application
 CMD ["sh", "/entrypoint.sh"]
