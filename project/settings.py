@@ -35,7 +35,6 @@ else:
     DEBUG = True
     ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
 CSRF_TRUSTED_ORIGINS = []
 for host in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append(f'https://{host}')
@@ -167,3 +166,6 @@ RQ_QUEUES = {
         'DEFAULT_TIMEOUT': 360,
     },
 }
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

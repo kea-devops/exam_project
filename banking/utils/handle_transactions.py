@@ -18,9 +18,10 @@ def internal(data):
     transfer_type = TRANSACTION_TYPE_CHOICES[1][0]
 
     try:
-        debit_account = Account.objects.get(account_num=data['recipient_account'])
+        debit_account = Account.objects.get(account_num=data['target_account'])
     except Account.DoesNotExist:
-        raise TransactionError('Recipient account does not exist', status_code=400)
+        print('Target account does not exist')
+        raise TransactionError('Target account does not exist', status_code=400)
     debit_counterparty = debit_account.account_reg_num()
 
     tnx = Transaction()
@@ -69,7 +70,8 @@ def external(transaction_data):
         raise TransactionError('Internal Server Error', status_code=500)
     
     if response.status_code != 200:
-        raise TransactionError('Recipient bank not found', status_code=404)
+        print('Lookup Error:', response.status_code)
+        raise TransactionError('Target bank not found', status_code=404)
     
     data = response.json()['data']
     
