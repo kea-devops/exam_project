@@ -116,5 +116,5 @@ def transaction_list(request, customer_pk):
         except TransactionError as e:
             return HttpResponse(str(e.message), status=e.status_code)
     
-    # return redirect('banking:customer/account', customer_pk=customer_pk, account_pk=account_pk)
-    return HttpResponse('test', status=400)
+    return redirect('banking:customer/account', customer_pk=customer_pk, account_pk=account_pk)
+    # return HttpResponse('test', status=400)
