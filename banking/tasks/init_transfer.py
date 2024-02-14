@@ -29,7 +29,7 @@ def init_transfer(params):
         ipbr_data = response.json()['data']
         data = validate_init_bank(params, ipbr_data)
     except Exception as e:
-        print(e)
+        print('validate_init_bank:', e)
         return # Halt execution
     
     # Perform PRE_CONFIRM request to init bank

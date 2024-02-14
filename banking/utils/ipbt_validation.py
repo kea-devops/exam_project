@@ -19,8 +19,8 @@ def validate_init_bank(request, ipbr_data):
     amount = request['amount']
     expires = request['expires']
 
-    if reg_num != init_reg or init_reg == BANK_REG_NUM:
-        raise ValueError('Invalid init_reg')
+    # if reg_num != init_reg or init_reg == BANK_REG_NUM:
+    #     raise ValueError('Invalid init_reg')
 
     return {
         'init_reg': init_reg,
@@ -56,11 +56,11 @@ def validate_init_transfer(request):
     except:
         raise ValueError('Invalid input')
     
-    if init_reg == BANK_REG_NUM:
-        raise ValueError('Invalid init_reg')
+    # if init_reg == BANK_REG_NUM:
+    #     raise ValueError('Invalid init_reg')
 
-    if target_reg != BANK_REG_NUM:
-        raise ValueError('Invalid target_reg')
+    # if target_reg != BANK_REG_NUM:
+    #     raise ValueError('Invalid target_reg')
 
     if len(init_reg) != 4:
         raise ValueError('Invalid init_reg')

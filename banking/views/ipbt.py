@@ -26,7 +26,9 @@ def init_transfer(request):
     except ValueError as e:
         return HttpResponse(str(e), status=400)
     
+    print(data['target_account'])
     account = get_object_or_404(Account, account_num=data['target_account'])
+    print(account.account_num)
 
     params = { 'job': 'init_transfer', 'data': data}
     django_rq.enqueue(rq_worker, params)
@@ -65,6 +67,8 @@ def pre_confirm_transfer(request):
         ipbt.expires_internally_at = None
         ipbt.expires_externally_at = None
         ipbt.save()
+        print('Pre Confirm Transfer - Invalid target_account:', data['target_account'])
+        return HttpResponse('Invalid target_account', status=400)
         
 
     expires_at = time_from_now(10)
