@@ -31,11 +31,11 @@ class Command(BaseCommand):
             Customer_rank.objects.create(name='Gold', score=75)
 
         # Create account types if table is empty
-        if not Account_type.objects.all():
-            Account_type.objects.create(name='Regular', internal_use=False, interest_rate=Decimal(2.10))
-            Account_type.objects.create(name='Savings', internal_use=False, interest_rate=Decimal(5.75))
-            Account_type.objects.create(name='Loan', internal_use=True, interest_rate=Decimal(12.32))
-            Account_type.objects.create(name='Interbanking', internal_use=True, interest_rate=Decimal(0))
+        Account_type.objects.get_or_create(name='Regular', internal_use=False, interest_rate=Decimal(2.10))
+        Account_type.objects.get_or_create(name='Savings', internal_use=False, interest_rate=Decimal(5.75))
+        Account_type.objects.get_or_create(name='Loan', internal_use=True, interest_rate=Decimal(12.32))
+        Account_type.objects.get_or_create(name='Interbanking', internal_use=True, interest_rate=Decimal(0))
+        Account_type.objects.get_or_create(name='Interest', internal_use=True, interest_rate=Decimal(0))
 
         internal_accounts, internal_accounts_created = User.objects.get_or_create(username='internal_accounts')
         if internal_accounts_created:

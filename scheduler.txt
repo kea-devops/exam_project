@@ -1,0 +1,1 @@
+0 0 * * * python manage.py apply_interest >> /var/log/cron.log 2>&1
