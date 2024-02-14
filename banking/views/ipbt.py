@@ -61,14 +61,14 @@ def pre_confirm_transfer(request):
     
     ipbt = get_object_or_404(IPBT, transaction=data['init_transaction_id'])
     try:
-        account = Account.objects.get(account_num=data['target_account'])
+        account = Account.objects.get(account_num=data['init_account'])
     except:
         ipbt.status = IPBT_STATUS_CHOICES[4][0]
         ipbt.expires_internally_at = None
         ipbt.expires_externally_at = None
         ipbt.save()
-        print('Pre Confirm Transfer - Invalid target_account:', data['target_account'])
-        return HttpResponse('Invalid target_account', status=400)
+        print('Pre Confirm Transfer - init_account not found:', data['init_account'])
+        return HttpResponse('Not Found init_account', status=404)
         
 
     expires_at = time_from_now(10)
@@ -82,8 +82,8 @@ def pre_confirm_transfer(request):
             'init_transaction_id': str(ipbt.pk),
             'init_reg': data['init_reg'],
             'target_reg': data['target_reg'],
-            'init_account': data['init_account'],
-            'target_account': account.account_num,
+            'init_account': account.account_num,
+            'target_account': data['target_account'],
             'amount': data['amount'],
             'expires': str(expires_at)
         },
